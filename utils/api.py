@@ -47,16 +47,22 @@ def get_company(symbol: str):
     return requests.get(_url(f"/stock/{symbol}/company", "stable"), params=token)
 
 
+# expensive
 def get_dividends(symbol: str, qtd: int):
     return requests.get(_url(f"/time-series/advanced_dividends/{symbol}?last={qtd}", "stable"), params=token)
 
 
+# expensive
 def get_return_of_capital(symbol: str, qtd: int):
     return requests.get(_url(f"/time-series/advanced_return_of_capital/{symbol}?last={qtd}", "stable"), params=token)
 
 
 def get_collection(sector: str):
     return requests.get(_url(f"/stock/market/collection/sector?collectionName={sector}", "stable"), params=token)
+
+
+def get_news(symbol: str, period: str, limit: int):
+    return requests.get(_url(f"/time-series/news/{symbol}?range={period}&limit={limit}", "stable"), params=token)
 
 
 def write(m, r):
