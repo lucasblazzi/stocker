@@ -1,5 +1,6 @@
 import requests
 from config import TOKEN as token
+from config import API_URL as api_url
 import json
 
 
@@ -30,7 +31,7 @@ class API:
 
     @staticmethod
     def _url(path):
-        return f"https://sandbox.iexapis.com/stable{path}"
+        return f"{api_url}{path}"
 
     @staticmethod
     def _response_parser(response):
