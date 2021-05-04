@@ -133,15 +133,15 @@ token = ""
 
 # Set to false to disable the deprecation warning for the file uploader encoding.
 # Default: "True"
-showfileUploaderEncoding = "True"
+showfileUploaderEncoding = "False"
 
 # Set to false to disable the deprecation warning for the image format parameter.
 # Default: "True"
-showImageFormat = "True"
+showImageFormat = "False"
 
 # Set to false to disable the deprecation warning for using the global pyplot instance.
 # Default: "True"
-showPyplotGlobalUse = "True"
+showPyplotGlobalUse = "False"
 
 
 [s3]
