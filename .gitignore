@@ -1,5 +1,6 @@
 # Specific files
-config.py
+utils/config.py
+mock
 .idea
 
 # Byte-compiled / optimized / DLL files
@@ -131,3 +132,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/mock/

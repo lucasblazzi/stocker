@@ -1,0 +1,19 @@
+version: "3.0"
+services:
+  default:
+    container_name: research
+    build: ./src/research
+    volumes:
+      - "./src/research:/src"
+  crypto:
+    container_name: premium
+    build: ./src/premium
+    volumes:
+      - "./src/premium:/src"
+  static:
+    container_name: static
+    image: nginx:1.19.6
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./default.conf:/etc/nginx/conf.d/default.conf"
