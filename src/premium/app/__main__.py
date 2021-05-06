@@ -8,7 +8,8 @@ def is_authenticated(username, password):
 def generate_login_block():
     block1 = st.empty()
     block2 = st.empty()
-    return block1, block2
+    block3 = st.empty()
+    return block1, block2, block3
 
 
 def clean_blocks(blocks):
@@ -18,20 +19,21 @@ def clean_blocks(blocks):
 
 def login(blocks):
     username_block = blocks[0].text_input("Username", type="default")
-    pass_block = blocks[1].text_input("Username", type="password")
-    return username_block, pass_block
+    pass_block = blocks[1].text_input("Password", type="password")
+    login_block = blocks[2].button('Login')
+    return username_block, pass_block, login_block
 
 
 def main():
-    st.header('Hello')
     st.balloons()
 
 
 login_blocks = generate_login_block()
-username, password = login(login_blocks)
+username, password, login = login(login_blocks)
 
-if is_authenticated(username, password):
-    clean_blocks(login_blocks)
-    main()
-else:
-    st.info("Please provida valid credentials")
+if login:
+    if is_authenticated(username, password):
+        clean_blocks(login_blocks)
+        main()
+    else:
+        st.error("Please provide valid credentials")
