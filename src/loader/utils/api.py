@@ -1,7 +1,8 @@
 import requests
-from config import TOKEN as token
-from config import API_URL as api_url
 import json
+
+from .config import TOKEN
+from .config import API_URL
 
 
 class API:
@@ -22,16 +23,19 @@ class API:
             "upcoming_ipos": "/stock/market/upcoming-ipos",
             "company": f"/stock/{self.symbol}/company",
             "historical": f"/stock/{self.symbol}/chart/{self.period}",
-            "dividends": f"/time-series/advanced_dividends/{self.symbol}?last={self.limit}",
+            "dividends": f"/stock/dividends/{self.symbol}/last/{self.limit}",
             "return_of_capital": f"/time-series/advanced_return_of_capital/{self.symbol}?last={self.limit}",
+            "news": f"/stock/{self.symbol}/news/last/{self.limit}",
+            "cash_flow": f"/stock/{self.symbol}/news/last/{self.limit}",
+            "balance_sheet": f"/stock/{self.symbol}/balance-sheet/last/{self.limit}",
+            "fundamentals": f"/time-series/fundamentals/{self.symbol}/last/{self.limit}",
             "collection": f"/stock/market/collection/sector?collectionName={self.sector}",
-            "news": f"/time-series/news/{self.symbol}?range={self.period}&limit={self.limit}"
         }
         return endpoints.get(self.endpoint)
 
     @staticmethod
     def _url(path):
-        return f"{api_url}{path}"
+        return f"{API_URL}{path}"
 
     @staticmethod
     def _response_parser(response):
@@ -51,5 +55,5 @@ class API:
 
     def get(self):
         path = self._endpoint()
-        r = requests.get(self._url(path=path), params=token)
+        r = requests.get(self._url(path=path), params=TOKEN)
         return self._response_parser(r)
