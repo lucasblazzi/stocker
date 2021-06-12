@@ -13,7 +13,9 @@ class Database:
 
     def query(self, query):
         self.cur.execute(query)
-        return self.cur.fetchall()
+        results = self.cur.fetchall()
+        self.conn.commit()
+        return results
 
     def close(self):
         self.cur.close()
@@ -27,3 +29,4 @@ class Database:
 # SQL = "INSERT INTO authors (name) VALUES (%s);"
 # data = ("O'Reilly", )
 # cur.execute(SQL, data)
+# testar o comando cur.description

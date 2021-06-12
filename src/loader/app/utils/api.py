@@ -1,8 +1,8 @@
 import requests
 import json
 
-from .config import TOKEN
-from .config import API_URL
+from config import TOKEN
+from config import API_URL
 
 
 class API:
@@ -12,24 +12,14 @@ class API:
         self.sector = obj.get("sector")
         self.period = obj.get("period")
         self.limit = obj.get("limit")
-        self.is_mock = obj.get("is_mock", False)
 
     def _endpoint(self):
         endpoints = {
             "symbols": "/ref-data/symbols",
-            "crypto_symbols": "/ref-data/crypto/symbols",
             "sectors": "/ref-data/sectors",
             "sectors_performance": "/stock/market/sector-performance",
-            "upcoming_ipos": "/stock/market/upcoming-ipos",
             "company": f"/stock/{self.symbol}/company",
             "historical": f"/stock/{self.symbol}/chart/{self.period}",
-            "dividends": f"/stock/dividends/{self.symbol}/last/{self.limit}",
-            "return_of_capital": f"/time-series/advanced_return_of_capital/{self.symbol}?last={self.limit}",
-            "news": f"/stock/{self.symbol}/news/last/{self.limit}",
-            "cash_flow": f"/stock/{self.symbol}/news/last/{self.limit}",
-            "balance_sheet": f"/stock/{self.symbol}/balance-sheet/last/{self.limit}",
-            "fundamentals": f"/time-series/fundamentals/{self.symbol}/last/{self.limit}",
-            "collection": f"/stock/market/collection/sector?collectionName={self.sector}",
         }
         return endpoints.get(self.endpoint)
 
@@ -57,3 +47,16 @@ class API:
         path = self._endpoint()
         r = requests.get(self._url(path=path), params=TOKEN)
         return self._response_parser(r)
+
+
+
+symbol = "AAPL"
+
+_obj = {
+    "endpoint": "collection",
+    "symbol": "AAPL",
+    "period": "1y",
+    "limit": 10,
+    "sector": "Technology"
+}
+API(_obj).mock()
