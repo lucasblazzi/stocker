@@ -1,5 +1,5 @@
 # Specific files
-src/loader/utils/config.py
+src/loader/app/utils/config.py
 mock
 .idea
 

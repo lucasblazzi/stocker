@@ -5,11 +5,6 @@ services:
     build: ./src/research
     volumes:
       - "./src/research:/src"
-  premium:
-    container_name: premium
-    build: ./src/premium
-    volumes:
-      - "./src/premium:/src"
   loader:
     container_name: loader
     build: ./src/loader

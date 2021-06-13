@@ -1,6 +1,7 @@
 import streamlit as st
-from ..main import View
-
+from main import View
+from models.data_load import Loader
+from models.user import User
 
 class Control:
     def __init__(self):
@@ -19,16 +20,49 @@ class Control:
             profile = False
         return profile
 
+    def admin_controller(self):
+        admin_option, execute, arg = self.view.admin_setup()
+        if admin_option == "Relatório" and execute:
+            st.write("msg")
+        elif admin_option == "Carga de dados" and execute:
+            status, msg = Loader().run_loader(_type="basic")
+            status = "success" if status else "error"
+            self.view.show_message("st", status, msg)
+        elif admin_option == "Registrar Advisor" and execute:
+            register, status = User().insert_user(arg)
+            if register:
+                self.view.show_message("st", "success", status)
+            else:
+                self.view.show_message("st", "error", status)
+        elif admin_option == "Editar Advisor" and execute:
+            if arg:
+                advisor = User().select_user(arg, "Advisor")
+                if advisor:
+                    updated_advisor = self.view.advisor_form(advisor)
+                    print(updated_advisor)
+                    if updated_advisor:
+                        update, status = User().update_user(updated_advisor)
+                        if update:
+                            self.view.show_message("st", "success", status)
+                        else:
+                            self.view.show_message("st", "error", status)
+
     def main(self):
         _user, _pass = self.view.login()
         _profile = self.get_profile(_user, _pass)
         if _profile:
             self.view.show_message("sb", "info", f"Você agora está logado como {_profile}")
+
             if _profile == "admin":
-                self.view.admin_setup()
+                self.admin_controller()
+
             elif _profile == "advisor":
                 self.view.advisor_setup()
+
             elif _profile == "client":
                 self.view.client_setup()
         else:
             self.view.show_message("sb", "error", f"Suas credenciais são inválidas")
+
+
+Control().main()

@@ -1,11 +1,12 @@
 import requests
 import json
+import sys
+sys.path.append("..")
+from utils.config import TOKEN
+from utils.config import API_URL
 
-from config import TOKEN
-from config import API_URL
 
-
-class API:
+class Api:
     def __init__(self, obj):
         self.endpoint = obj.get("endpoint")
         self.symbol = obj.get("symbol")
@@ -17,9 +18,9 @@ class API:
         endpoints = {
             "symbols": "/ref-data/symbols",
             "sectors": "/ref-data/sectors",
-            "sectors_performance": "/stock/market/sector-performance",
             "company": f"/stock/{self.symbol}/company",
             "historical": f"/stock/{self.symbol}/chart/{self.period}",
+            "company_logo": f"/stock/{self.symbol}/logo"
         }
         return endpoints.get(self.endpoint)
 
@@ -47,16 +48,3 @@ class API:
         path = self._endpoint()
         r = requests.get(self._url(path=path), params=TOKEN)
         return self._response_parser(r)
-
-
-
-symbol = "AAPL"
-
-_obj = {
-    "endpoint": "collection",
-    "symbol": "AAPL",
-    "period": "1y",
-    "limit": 10,
-    "sector": "Technology"
-}
-API(_obj).mock()
