@@ -25,9 +25,21 @@ class Control:
         if admin_option == "Relatório" and execute:
             st.write("msg")
         elif admin_option == "Carga de dados" and execute:
-            status, msg = Loader().run_loader(_type="basic")
+            status = None
+            msg = ""
+
+            if arg["loader"] == "full":
+                status, msg = Loader().run_loader(_type="basic")
+            elif arg["loader"] == "company":
+                status, msg = Loader().company_loader(_type=arg["symbols"])
+            elif arg["loader"] == "price":
+                status, msg = Loader().price_loader(_type=arg["symbols"], _period=arg["period"])
+            elif arg["loader"] == "news":
+                status, msg = Loader().news_loader(_type="basic")
+
             status = "success" if status else "error"
             self.view.show_message("st", status, msg)
+
         elif admin_option == "Registrar Advisor" and execute:
             register, status = User().insert_user(arg)
             if register:

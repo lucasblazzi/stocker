@@ -18,6 +18,8 @@ class View:
             component.error(message)
         elif _type == "warning":
             component.warning(message)
+        elif _type == "info":
+            component.info(message)
 
     def login(self):
         _user = self.side_bar.text_input("Username:")
@@ -33,16 +35,45 @@ class View:
     def admin_setup(self):
         option = self.side_bar.selectbox("Opções:", ("Relatório", "Carga de dados", "Advisors"))
         execute = False
-        advisor = None
+        arg = None
 
         self.st.title("Stocker Administration Area")
         self.st.markdown("___")
 
         if option == "Carga de dados":
-            self.show_message("st", "warning", "Atenção! A carga de dados fará todos os requests na API "
-                                               "para carregar o banco de dados (1.140.225 de créditos)")
-            if self.st.button("Carga de dados"):
+            arg = dict()
+            self.st.header("Stocker Data Loader")
+            arg["symbols"] = self.st.selectbox("Stocks Option:", ("Sample", "S&P 100"))
+
+            self.st.markdown("___")
+            self.show_message("st", "info", "Stock Loading: Load on our database information about the companies listed"
+                                            "on the Stocks Option selected")
+            if self.st.button("Load Stocks"):
                 execute = True
+                arg["loader"] = "company"
+
+            self.st.markdown("___")
+            self.show_message("st", "info", "Price Loading: Load on our database information about companies daily"
+                                            " prices, you can select a specific period")
+            arg["period"] = self.st.selectbox("Prices Period:", ("5y", "2y", "1y", "ytd", "6m", "3m", "1m", "5d"))
+            if self.st.button("Load Prices"):
+                execute = True
+                arg["loader"] = "price"
+
+            self.st.markdown("___")
+            self.show_message("st", "info", "News Loading: Load on our database information about the latest news of"
+                                            " companies which can impact the market")
+            if self.st.button("Load News"):
+                execute = True
+                arg["loader"] = "news"
+
+            self.st.markdown("___")
+            self.show_message("st", "warning", "Attention! The full data load will result on system overload and "
+                                               "high credit use (2.040.225 credits)")
+            if self.st.button("Full Load"):
+                execute = True
+                arg["symbols"] = "full"
+
         elif option == "Relatório":
             self.st.write("xz")
             if self.st.button("Carga de dados"):
@@ -54,16 +85,16 @@ class View:
                 option = sub_option
                 execute = True
             elif sub_option == "Registrar Advisor":
-                advisor = self.advisor_form(None)
+                arg = self.advisor_form(None)
                 option = sub_option
-                if advisor:
+                if arg:
                     execute = True
             elif sub_option == "Editar Advisor":
-                advisor = self.st.text_input("CPF", max_chars=15, type='default', help="CPF: 123.123.123-12")
+                arg = self.st.text_input("CPF", max_chars=15, type='default', help="CPF: 123.123.123-12")
                 execute = True
                 option = sub_option
                 self.st.markdown("___")
-        return option, execute, advisor
+        return option, execute, arg
 
     def advisor_form(self, advisor):
         cols = self.st.beta_columns([0.5, 0.25, 0.25])

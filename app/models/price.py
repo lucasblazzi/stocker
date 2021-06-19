@@ -23,11 +23,11 @@ class Price:
             prices.append(price)
         return prices
 
-    def price_load(self, symbol):
+    def price_load(self, symbol, period):
         historical = {
             "endpoint": "historical",
             "symbol": symbol,
-            "period": "5y"
+            "period": period
         }
         price = self.api(historical).get()
         return price
