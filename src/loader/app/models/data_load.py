@@ -11,24 +11,42 @@ class Loader:
         self.company = Company()
         self.price = Price()
 
-    def get_symbols(self):
-        symbols = {
-            "endpoint": "symbols"
-        }
-        return self.api(symbols).get()
+    def get_symbols(self, _type):
+        if _type == "sp100":
+            with open("sp100.txt", "r") as sp:
+                symbol_list = [s.split(" ")[0] for s in sp]
+        elif _type == "full":
+            symbols = self.api({"endpoint": "symbols"}).get()
+            symbol_list = [_obj.get("symbol") for _obj in symbols]
+        else:
+            symbol_list = ["AAPL", "ADBE", "AMZN", "BRK.B", "CSCO", "GOOGL"]
+        return symbol_list
 
-    def run_loader(self, _type="basic"):
+    def price_loader(self):
+        prices = list()
+        symbol_list = self.get_symbols("basic")
+        for symbol in symbol_list:
+            company_prices = self.price.price_load(symbol=symbol)
+            prices.extend(company_prices)
+
+        msg, status = self.price.insert_prices(_prices=prices)
+        return msg, status
+
+    def company_loader(self):
+        companies = list()
+        symbol_list = self.get_symbols("basic")
+        for symbol in symbol_list:
+            company = self.company.company_load(symbol=symbol)
+            companies.append(company)
+
+        msg, status = self.company.insert_company(_companies=companies)
+        return msg, status
+
+    def full_loader(self, _type="basic"):
         companies = list()
         prices = list()
 
-        if _type == "s&p100":
-            with open("sp100.txt", "r") as sp:
-                symbol_list = [s.split(" ")[0] for s in sp]
-        elif _type == "basic":
-            symbol_list = ["AAPL", "ADBE", "AMZN", "BRK.B", "CSCO", "GOOGL"]
-        else:
-            symbols = self.get_symbols()
-            symbol_list = [_obj.get("symbol") for _obj in symbols]
+        symbol_list = self.get_symbols(_type)
 
         for symbol in symbol_list:
             company = self.company.company_load(symbol=symbol)
