@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
-
+from datetime import datetime
 
 class Price:
     def __init__(self):
@@ -13,12 +13,13 @@ class Price:
         prices = list()
         for _price in _prices:
             price = {
-                "symbol": _price.get("symbol"),
-                "date": _price.get("date"),
-                "open": _price.get("open"),
-                "close": _price.get("close"),
-                "high": _price.get("high"),
-                "low": _price.get("low"),
+                "symbol": str(_price.get("symbol")),
+                "date": datetime.strptime(_price.get("date"), "%Y-%m-%d"),
+                "open": round(float(_price.get("open")), 4),
+                "close": round(float(_price.get("close")), 4),
+                "high": round(float(_price.get("high")), 4),
+                "low": round(float(_price.get("low")), 4),
+                "volume": int(_price.get("volume")),
             }
             prices.append(price)
         return prices
@@ -35,9 +36,10 @@ class Price:
     def insert_prices(self, _prices):
         prices = self._normalize(_prices)
         query = """
-            INSERT INTO price (symbol, date, open, close, high, low) VALUES 
-            (%(symbol)s, %(date)s, %(open)s, %(close)s, %(high)s, %(low)s)
-            ON CONFLICT (symbol, date) DO UPDATE SET (open, close, high, low)=(%(open)s, %(close)s, %(high)s, %(low)s);
+            INSERT INTO stocker.price (symbol, date, open, close, high, low, volume) VALUES 
+            (%(symbol)s, %(date)s, %(open)s, %(close)s, %(high)s, %(low)s, %(volume)s)
+            ON CONFLICT (symbol, date) DO UPDATE SET (open, close, high, low, volume)=(%(open)s, %(close)s, %(high)s, 
+            %(low)s, %(volume)s);
             """
         try:
             db = Database()
@@ -46,4 +48,5 @@ class Price:
             return True, "Inserção feita com sucesso"
 
         except Exception as e:
+            print(e)
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"

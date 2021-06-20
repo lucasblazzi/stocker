@@ -2,6 +2,7 @@ import sys
 sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
+from datetime import datetime
 
 
 class News:
@@ -10,13 +11,15 @@ class News:
 
     @staticmethod
     def _normalize(_news):
+        print(_news)
         news = {
-            "date": str(_news.get("datetime")),
+            "symbol": str(_news.get("symbol")),
+            "date": datetime.fromtimestamp(_news.get("datetime")/1000.0),
             "title": str(_news.get("headline")),
             "source": str(_news.get("source")),
-            "url": str(_news.get("url")),
+            "url": _news.get("url"),
             "description": str(_news.get("summary")),
-            "image": str(_news.get("image")),
+            "image": _news.get("image"),
         }
         return news
 
@@ -26,7 +29,8 @@ class News:
             "symbol": symbol
         }
         news = self.api(_news).get()
-        print(news)
+        for n in news:
+            n["symbol"] = symbol
         return news
 
     def insert_news(self, all_news):
@@ -36,8 +40,8 @@ class News:
             normalized_news.append(news)
 
         query = """
-            INSERT INTO news (date, title, source, url, description, image) VALUES (%(date)s, %(title)s, %(source)s,
-             %(url)s, %(description)s, %(image)s);
+            INSERT INTO stocker.news (symbol, date, title, source, url, description, image) VALUES (%(symbol)s, 
+            %(date)s, %(title)s, %(source)s, %(url)s, %(description)s, %(image)s);
             """
 
         try:
@@ -46,4 +50,5 @@ class News:
             return True, "Inserção feita com sucesso"
 
         except Exception as e:
+            print(e)
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"

@@ -57,23 +57,30 @@ class Loader:
     def full_loader(self, _type="Sample"):
         companies = list()
         prices = list()
+        news = list()
 
         symbol_list = self.get_symbols(_type)
 
         for symbol in symbol_list:
             company = self.company.company_load(symbol=symbol)
-            company_prices = self.price.price_load(symbol=symbol)
+            company_prices = self.price.price_load(symbol=symbol, period="5y")
+            company_news = self.news.news_load(symbol=symbol)
             companies.append(company)
             prices.extend(company_prices)
+            news.extend(company_news)
 
         msg1, status1 = self.company.insert_company(_companies=companies)
         msg2, status2 = self.price.insert_prices(_prices=prices)
+        msg3, status3 = self.news.insert_news(all_news=news)
 
         if not msg1:
             msg = msg1
             status = status1
-        else:
+        elif msg2:
             msg = msg2
             status = status2
+        else:
+            msg = msg3
+            status = status3
 
         return msg, status

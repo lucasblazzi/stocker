@@ -33,7 +33,7 @@ class View:
         option = self.side_bar.selectbox("Opções:", ("Cliente", "Carteiras", "Research"))
 
     def admin_setup(self):
-        option = self.side_bar.selectbox("Opções:", ("Relatório", "Carga de dados", "Advisors"))
+        option = self.side_bar.selectbox("Opções:", ("Carga de dados", "Advisors", "Relatório"))
         execute = False
         arg = None
 
@@ -46,6 +46,7 @@ class View:
             arg["symbols"] = self.st.selectbox("Stocks Option:", ("Sample", "S&P 100"))
 
             self.st.markdown("___")
+            self.st.subheader("Stocker Company Loader")
             self.show_message("st", "info", "Stock Loading: Load on our database information about the companies listed"
                                             "on the Stocks Option selected")
             if self.st.button("Load Stocks"):
@@ -53,6 +54,7 @@ class View:
                 arg["loader"] = "company"
 
             self.st.markdown("___")
+            self.st.subheader("Stocker Price Loader")
             self.show_message("st", "info", "Price Loading: Load on our database information about companies daily"
                                             " prices, you can select a specific period")
             arg["period"] = self.st.selectbox("Prices Period:", ("5y", "2y", "1y", "ytd", "6m", "3m", "1m", "5d"))
@@ -61,6 +63,7 @@ class View:
                 arg["loader"] = "price"
 
             self.st.markdown("___")
+            self.st.subheader("Stocker News Loader")
             self.show_message("st", "info", "News Loading: Load on our database information about the latest news of"
                                             " companies which can impact the market")
             if self.st.button("Load News"):
@@ -68,16 +71,16 @@ class View:
                 arg["loader"] = "news"
 
             self.st.markdown("___")
-            self.show_message("st", "warning", "Attention! The full data load will result on system overload and "
-                                               "high credit use (2.040.225 credits)")
+            self.st.subheader("Stocker Full Loader")
+            self.show_message("st", "info", "Full Loading: Load on our database all information listed above: companies"
+                                            "prices and news")
             if self.st.button("Full Load"):
                 execute = True
-                arg["symbols"] = "full"
+                arg["loader"] = "full"
 
         elif option == "Relatório":
-            self.st.write("xz")
-            if self.st.button("Carga de dados"):
-                execute = True
+            self.st.header("Relatório")
+
         elif option == "Advisors":
             sub_option = self.st.selectbox("Opções:", ("Listar Advisors", "Registrar Advisor", "Editar Advisor"))
             self.st.markdown("___")
@@ -98,21 +101,11 @@ class View:
 
     def advisor_form(self, advisor):
         cols = self.st.beta_columns([0.5, 0.25, 0.25])
+        button = "Atualizar Advisor" if advisor else "Registrar Advisor"
         advisor = {
             "name": cols[0].text_input("Nome", max_chars=30, type='default', help="Nome Completo",
                                        value=advisor["name"]) if advisor
             else cols[0].text_input("Nome", max_chars=30, type='default', help="Nome Completo"),
-
-            "cpf": cols[1].text_input("CPF", max_chars=15, type='default', help="CPF: 123.123.123-12",
-                                      value=advisor["cpf"]) if advisor
-            else cols[1].text_input("CPF", max_chars=15, type='default', help="CPF: 123.123.123-12"),
-
-            "cvm_license": cols[2].text_input("Lincença CVM", max_chars=10, type='default',
-                                              value=advisor["cvm_license"]) if advisor
-            else cols[2].text_input("Lincença CVM", max_chars=10, type='default'),
-
-            "email": cols[0].text_input("Email", max_chars=30, type='default', value=advisor["email"]) if advisor
-            else cols[0].text_input("Email", max_chars=30, type='default'),
 
             "username": cols[1].text_input("Usuário", max_chars=15, type='default', help="Usuário para login",
                                            value=advisor["username"]) if advisor
@@ -122,9 +115,18 @@ class View:
                                            value=advisor["password"]) if advisor
             else cols[2].text_input("Senha", max_chars=15, type='password', help="Senha para login"),
 
-            "profile": self.st.text_input("Profile", value="Advisor")
+            "cpf": advisor["cpf"] if advisor
+            else cols[2].text_input("CPF", max_chars=15, type='default', help="CPF: 123.123.123-12"),
+
+            "cvm_license": cols[1].text_input("Lincença CVM", max_chars=10, type='default',
+                                              value=advisor["cvm_license"]) if advisor
+            else cols[1].text_input("Lincença CVM", max_chars=10, type='default'),
+
+            "email": cols[0].text_input("Email", max_chars=30, type='default', value=advisor["email"]) if advisor
+            else cols[0].text_input("Email", max_chars=30, type='default'),
+
+            "profile": "advisor"
         }
-        button = "Atualizar Advisor" if advisor else "Registrar Advisor"
         register = self.st.button(button)
         self.st.markdown("___")
         filled = True

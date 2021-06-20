@@ -29,7 +29,7 @@ class Control:
             msg = ""
 
             if arg["loader"] == "full":
-                status, msg = Loader().run_loader(_type="basic")
+                status, msg = Loader().full_loader(_type=arg["symbols"])
             elif arg["loader"] == "company":
                 status, msg = Loader().company_loader(_type=arg["symbols"])
             elif arg["loader"] == "price":
@@ -48,7 +48,7 @@ class Control:
                 self.view.show_message("st", "error", status)
         elif admin_option == "Editar Advisor" and execute:
             if arg:
-                advisor = User().select_user(arg, "Advisor")
+                advisor = User().select_user(arg, "advisor")
                 if advisor:
                     updated_advisor = self.view.advisor_form(advisor)
                     print(updated_advisor)
