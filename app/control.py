@@ -10,14 +10,9 @@ class Control:
 
     @staticmethod
     def get_profile(_user, _pass):
-        if _user == "advisor" and _pass == "advisor":
-            profile = "advisor"
-        elif _user == "admin" and _pass == "admin":
+        profile = User.login(_user, _pass)
+        if _user == "admin" and _pass == "admin":
             profile = "admin"
-        elif _user == "client" and _pass == "client":
-            profile = "client"
-        else:
-            profile = False
         return profile
 
     def admin_controller(self):
@@ -48,7 +43,7 @@ class Control:
                 self.view.show_message("st", "error", status)
         elif admin_option == "Editar Advisor" and execute:
             if arg:
-                advisor = User().select_user(arg, "advisor")
+                advisor = User().select_user(arg)
                 if advisor:
                     updated_advisor = self.view.advisor_form(advisor)
                     print(updated_advisor)

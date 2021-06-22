@@ -30,7 +30,7 @@ class View:
         option = self.side_bar.selectbox("Opções:", ("Minha carteira", ))
 
     def advisor_setup(self):
-        option = self.side_bar.selectbox("Opções:", ("Cliente", "Carteiras", "Research"))
+        option = self.side_bar.selectbox("Opções:", ("Research", ))
 
     def admin_setup(self):
         option = self.side_bar.selectbox("Opções:", ("Carga de dados", "Advisors", "Relatório"))

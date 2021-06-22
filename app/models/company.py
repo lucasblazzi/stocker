@@ -2,6 +2,7 @@ import sys
 sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
+from utils.db_query import insert_company_query
 
 
 class Company:
@@ -49,19 +50,9 @@ class Company:
             company = self._normalize(_company)
             companies.append(company)
 
-        query = """
-            INSERT INTO stocker.company (symbol, name, exchange, industry, website, description, CEO, sector, 
-                employees, state, city, country, logo) VALUES (%(symbol)s, %(name)s, %(exchange)s, %(industry)s,
-                %(website)s, %(description)s, %(CEO)s, %(sector)s, %(employees)s, %(state)s, %(city)s, %(country)s,
-                %(logo)s)
-            ON CONFLICT (symbol) DO UPDATE SET (name, exchange, industry, website, description, CEO, sector, 
-                employees, state, city, country, logo)=(%(name)s, %(exchange)s, %(industry)s, %(website)s,
-                %(description)s, %(CEO)s, %(sector)s, %(employees)s, %(state)s, %(city)s, %(country)s, %(logo)s);
-            """
-
         try:
             db = Database()
-            db.batch_insert(query, companies)
+            db.batch_insert(insert_company_query, companies)
             return True, "Inserção feita com sucesso"
 
         except Exception as e:

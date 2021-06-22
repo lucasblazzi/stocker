@@ -3,6 +3,8 @@ sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
 from datetime import datetime
+from utils.db_query import insert_prices_query
+
 
 class Price:
     def __init__(self):
@@ -35,15 +37,9 @@ class Price:
 
     def insert_prices(self, _prices):
         prices = self._normalize(_prices)
-        query = """
-            INSERT INTO stocker.price (symbol, date, open, close, high, low, volume) VALUES 
-            (%(symbol)s, %(date)s, %(open)s, %(close)s, %(high)s, %(low)s, %(volume)s)
-            ON CONFLICT (symbol, date) DO UPDATE SET (open, close, high, low, volume)=(%(open)s, %(close)s, %(high)s, 
-            %(low)s, %(volume)s);
-            """
         try:
             db = Database()
-            db.batch_insert(query, prices)
+            db.batch_insert(insert_prices_query, prices)
             db.close()
             return True, "Inserção feita com sucesso"
 

@@ -3,6 +3,7 @@ sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
 from datetime import datetime
+from utils.db_query import insert_news_query
 
 
 class News:
@@ -39,14 +40,9 @@ class News:
             news = self._normalize(_news)
             normalized_news.append(news)
 
-        query = """
-            INSERT INTO stocker.news (symbol, date, title, source, url, description, image) VALUES (%(symbol)s, 
-            %(date)s, %(title)s, %(source)s, %(url)s, %(description)s, %(image)s);
-            """
-
         try:
             db = Database()
-            db.batch_insert(query, normalized_news)
+            db.batch_insert(insert_news_query, normalized_news)
             return True, "Inserção feita com sucesso"
 
         except Exception as e:
