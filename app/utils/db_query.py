@@ -39,6 +39,10 @@ insert_company_query = """
                 %(description)s, %(CEO)s, %(sector)s, %(employees)s, %(state)s, %(city)s, %(country)s, %(logo)s);
             """
 
+get_company_list = """
+    SELECT symbol FROM stocker.company
+    """
+
 price_series_query = """
         SELECT * FROM get_prices(%s, %s)
         """

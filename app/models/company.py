@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
-from utils.db_query import insert_company_query
+from utils.db_query import insert_company_query, get_company_list
 
 
 class Company:
@@ -58,3 +58,13 @@ class Company:
         except Exception as e:
             print(e)
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"
+
+    @staticmethod
+    def get_symbol_list():
+        try:
+            db = Database()
+            symbols = db.query(get_company_list)
+            return symbols
+        except Exception as e:
+            print(e)
+            return []

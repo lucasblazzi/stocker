@@ -1,7 +1,10 @@
 import streamlit as st
-from main import View
+from view import View
 from models.data_load import Loader
 from models.user import User
+from models.company import Company
+from models.price import Price
+
 
 class Control:
     def __init__(self):
@@ -17,9 +20,9 @@ class Control:
 
     def admin_controller(self):
         admin_option, execute, arg = self.view.admin_setup()
-        if admin_option == "Relatório" and execute:
-            st.write("msg")
-        elif admin_option == "Carga de dados" and execute:
+        if admin_option == "Ad-Hoc" and execute:
+            st.write("Ad-Hoc")
+        elif admin_option == "Data Loader" and execute:
             status = None
             msg = ""
 
@@ -35,13 +38,14 @@ class Control:
             status = "success" if status else "error"
             self.view.show_message("st", status, msg)
 
-        elif admin_option == "Registrar Advisor" and execute:
+        elif admin_option == "Register Advisor" and execute:
             register, status = User().insert_user(arg)
             if register:
                 self.view.show_message("st", "success", status)
             else:
                 self.view.show_message("st", "error", status)
-        elif admin_option == "Editar Advisor" and execute:
+
+        elif admin_option == "Edit Advisor" and execute:
             if arg:
                 advisor = User().select_user(arg)
                 if advisor:
@@ -54,22 +58,32 @@ class Control:
                         else:
                             self.view.show_message("st", "error", status)
 
+    def advisor_controller(self):
+        option = self.view.advisor_setup()
+        if option == "Research":
+            symbols = Company.get_symbol_list()
+            selected_symbols = self.view.symbol_input(sum(symbols, []))
+            execute, arg = self.view.research_area()
+            if arg["price"]["enabled"]:
+                prices = Price.get_prices(selected_symbols, arg["price"]["period"])
+                self.view.plot_price(selected_symbols, prices, "close")
+
     def main(self):
         _user, _pass = self.view.login()
         _profile = self.get_profile(_user, _pass)
         if _profile:
-            self.view.show_message("sb", "info", f"Você agora está logado como {_profile}")
+            self.view.show_message("sb", "info", f"You are now logged as {_profile}")
 
             if _profile == "admin":
                 self.admin_controller()
 
             elif _profile == "advisor":
-                self.view.advisor_setup()
+                self.advisor_controller()
 
             elif _profile == "client":
                 self.view.client_setup()
         else:
-            self.view.show_message("sb", "error", f"Suas credenciais são inválidas")
+            self.view.show_message("sb", "error", f"Invalid credentials")
 
 
 Control().main()

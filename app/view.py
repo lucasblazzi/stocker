@@ -1,3 +1,4 @@
+import plotly.graph_objects as go
 
 
 class View:
@@ -26,21 +27,70 @@ class View:
         _pass = self.side_bar.text_input("Password", type="password")
         return _user, _pass
 
-    def client_setup(self):
-        option = self.side_bar.selectbox("Opções:", ("Minha carteira", ))
-
     def advisor_setup(self):
-        option = self.side_bar.selectbox("Opções:", ("Research", ))
+        execute = False
+        args = None
+        option = self.side_bar.selectbox("Options:", ("Research", ))
+        if option == "Research":
+            self.st.header("Advisor Research Area")
+            self.st.markdown("___")
+        return option
+
+    def research_area(self):
+        execute = False
+        args = {"price": {"enabled": False}, "sector": {"enabled": False}, "news": {"enabled": False},
+                "comapany_info": {"enabled": False}, "dividends": {"enabled": False}}
+        self.st.markdown("___")
+        check_cols = self.st.beta_columns(5)
+
+        args["price"]["enabled"] = check_cols[0].checkbox("Price")
+        args["news"]["enabled"] = check_cols[1].checkbox("News")
+        args["comapany_info"]["enabled"] = check_cols[2].checkbox("Company Information")
+        args["sector"]["enabled"] = check_cols[3].checkbox("Sector Distribution")
+        args["dividends"]["enabled"] = check_cols[4].checkbox("Dividends")
+
+        if args["price"]["enabled"]:
+            self.st.markdown("___")
+            self.st.subheader("Price Filter")
+            price_cols = self.st.beta_columns(5)
+            args["price"]["_type"] = price_cols[0].selectbox("Price type:", ("close", "open", "high", "low"))
+            args["price"]["period"] = price_cols[1].selectbox("Period:", ("1m", "6m", "1y", "2y", "5y", "max"))
+        if args["news"]["enabled"]:
+            self.st.markdown("___")
+            self.st.subheader("News Filter")
+            news_cols = self.st.beta_columns(5)
+            args["price"]["period"] = news_cols[0].selectbox("Period:", ("Last", ))
+        return execute, args
+
+    def plot_price(self, symbols, prices, _type):
+        fig = go.Figure()
+        for symbol in symbols:
+            mask = prices["symbol"] == symbol
+            symbol_df = prices[mask]
+            fig.add_trace(go.Scatter(x=symbol_df.index, y=symbol_df[_type],
+                                     mode='lines',
+                                     name=symbol))
+        fig.update_layout(
+            template="plotly_white",
+            width=1400, height=500,
+            hovermode="x unified",
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
+        self.st.plotly_chart(fig)
+
+    def symbol_input(self, symbols):
+        selected_symbols = self.st.multiselect("Stocks list:", symbols)
+        return selected_symbols
 
     def admin_setup(self):
-        option = self.side_bar.selectbox("Opções:", ("Carga de dados", "Advisors", "Relatório"))
+        option = self.side_bar.selectbox("Option:", ("Data Loader", "Advisors", "Ad-Hoc"))
         execute = False
         arg = None
 
         self.st.title("Stocker Administration Area")
         self.st.markdown("___")
 
-        if option == "Carga de dados":
+        if option == "Data Loader":
             arg = dict()
             self.st.header("Stocker Data Loader")
             arg["symbols"] = self.st.selectbox("Stocks Option:", ("Sample", "S&P 100"))
@@ -78,21 +128,21 @@ class View:
                 execute = True
                 arg["loader"] = "full"
 
-        elif option == "Relatório":
-            self.st.header("Relatório")
+        elif option == "Ad-Hoc":
+            self.st.header("Ad-Hoc")
 
         elif option == "Advisors":
-            sub_option = self.st.selectbox("Opções:", ("Listar Advisors", "Registrar Advisor", "Editar Advisor"))
+            sub_option = self.st.selectbox("Opções:", ("List Advisors", "Register Advisor", "Edit Advisor"))
             self.st.markdown("___")
-            if sub_option == "Listar Advisors":
+            if sub_option == "List Advisors":
                 option = sub_option
                 execute = True
-            elif sub_option == "Registrar Advisor":
+            elif sub_option == "Register Advisor":
                 arg = self.advisor_form(None)
                 option = sub_option
                 if arg:
                     execute = True
-            elif sub_option == "Editar Advisor":
+            elif sub_option == "Edit Advisor":
                 arg = self.st.text_input("CPF", max_chars=15, type='default', help="CPF: 123.123.123-12")
                 execute = True
                 option = sub_option
@@ -101,7 +151,7 @@ class View:
 
     def advisor_form(self, advisor):
         cols = self.st.beta_columns([0.5, 0.25, 0.25])
-        button = "Atualizar Advisor" if advisor else "Registrar Advisor"
+        button = "Update Advisor" if advisor else "Register Advisor"
         advisor = {
             "name": cols[0].text_input("Nome", max_chars=30, type='default', help="Nome Completo",
                                        value=advisor["name"]) if advisor

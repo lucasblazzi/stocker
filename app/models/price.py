@@ -3,7 +3,8 @@ sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
 from datetime import datetime
-from utils.db_query import insert_prices_query
+from utils.db_query import insert_prices_query, price_series_query
+import pandas as pd
 
 
 class Price:
@@ -46,3 +47,18 @@ class Price:
         except Exception as e:
             print(e)
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"
+
+    @staticmethod
+    def get_prices(symbols, period):
+        parsed_symbols = " ".join(symbols)
+        try:
+            db = Database()
+            prices = db.query_arg(price_series_query, (parsed_symbols, period))
+            db.close()
+            prices_df = pd.DataFrame(prices, columns=["symbol", "date", "close", "high", "low", "open", "volume"])
+            prices_df.set_index("date", inplace=True)
+            return prices_df
+
+        except Exception as e:
+            print(e)
+            return False

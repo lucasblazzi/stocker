@@ -43,6 +43,16 @@ class Database:
             return e.pgcode
         return result
 
+    def query_arg(self, query, value):
+        try:
+            self.cur.execute(query, value)
+            result = self.cur.fetchall()
+            self.conn.commit()
+        except psycopg2.OperationalError as e:
+            return e.pgcode
+        return result
+
+
     def insert_update(self, query, value):
         try:
             self.cur.execute(query, value)
