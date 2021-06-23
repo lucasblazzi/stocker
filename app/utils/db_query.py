@@ -25,6 +25,10 @@ insert_news_query = """
                 %(date)s, %(title)s, %(source)s, %(url)s, %(description)s, %(image)s);
             """
 
+news_query = """
+            SELECT * FROM stocker.news n WHERE n.symbol = %s ORDER BY n.date DESC
+"""
+
 login_query = """
             SELECT * FROM login (%s, %s)
             """

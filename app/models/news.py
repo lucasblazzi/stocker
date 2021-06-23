@@ -3,7 +3,7 @@ sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
 from datetime import datetime
-from utils.db_query import insert_news_query
+from utils.db_query import insert_news_query, news_query
 
 
 class News:
@@ -48,3 +48,13 @@ class News:
         except Exception as e:
             print(e)
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"
+
+    @staticmethod
+    def select_news(symbols):
+        results = list()
+        db = Database()
+        for symbol in symbols:
+            result = db.query_by_id(news_query, (symbol, ))
+            results.append(result)
+        db.close()
+        return results

@@ -4,6 +4,7 @@ from models.data_load import Loader
 from models.user import User
 from models.company import Company
 from models.price import Price
+from models.news import News
 
 
 class Control:
@@ -63,10 +64,18 @@ class Control:
         if option == "Research":
             symbols = Company.get_symbol_list()
             selected_symbols = self.view.symbol_input(sum(symbols, []))
-            execute, arg = self.view.research_area()
-            if arg["price"]["enabled"]:
-                prices = Price.get_prices(selected_symbols, arg["price"]["period"])
-                self.view.plot_price(selected_symbols, prices, "close")
+            if selected_symbols:
+                execute, arg = self.view.research_area()
+                if arg["price"]["enabled"]:
+                    prices = Price.get_prices(selected_symbols, arg["price"]["period"])
+                    self.view.plot_price(prices, "close")
+                    if arg["volatility"]["enabled"]:
+                        for price in prices:
+                            price["percentage_change"] = price["close"].pct_change(1).fillna(0)
+                        self.view.plot_price(prices, "percentage_change")
+                if arg["news"]["enabled"]:
+                    news = News.select_news(selected_symbols)
+                    self.view.show_news(news)
 
     def main(self):
         _user, _pass = self.view.login()

@@ -28,8 +28,6 @@ class View:
         return _user, _pass
 
     def advisor_setup(self):
-        execute = False
-        args = None
         option = self.side_bar.selectbox("Options:", ("Research", ))
         if option == "Research":
             self.st.header("Advisor Research Area")
@@ -39,7 +37,7 @@ class View:
     def research_area(self):
         execute = False
         args = {"price": {"enabled": False}, "sector": {"enabled": False}, "news": {"enabled": False},
-                "comapany_info": {"enabled": False}, "dividends": {"enabled": False}}
+                "comapany_info": {"enabled": False}, "volatility": {"enabled": False}}
         self.st.markdown("___")
         check_cols = self.st.beta_columns(5)
 
@@ -47,29 +45,23 @@ class View:
         args["news"]["enabled"] = check_cols[1].checkbox("News")
         args["comapany_info"]["enabled"] = check_cols[2].checkbox("Company Information")
         args["sector"]["enabled"] = check_cols[3].checkbox("Sector Distribution")
-        args["dividends"]["enabled"] = check_cols[4].checkbox("Dividends")
 
         if args["price"]["enabled"]:
             self.st.markdown("___")
-            self.st.subheader("Price Filter")
+            self.st.subheader("Price")
             price_cols = self.st.beta_columns(5)
             args["price"]["_type"] = price_cols[0].selectbox("Price type:", ("close", "open", "high", "low"))
             args["price"]["period"] = price_cols[1].selectbox("Period:", ("1m", "6m", "1y", "2y", "5y", "max"))
-        if args["news"]["enabled"]:
-            self.st.markdown("___")
-            self.st.subheader("News Filter")
-            news_cols = self.st.beta_columns(5)
-            args["price"]["period"] = news_cols[0].selectbox("Period:", ("Last", ))
+            args["volatility"]["enabled"] = price_cols[3].checkbox("Volatility")
         return execute, args
 
-    def plot_price(self, symbols, prices, _type):
+    def plot_price(self, prices, _type):
         fig = go.Figure()
-        for symbol in symbols:
-            mask = prices["symbol"] == symbol
-            symbol_df = prices[mask]
-            fig.add_trace(go.Scatter(x=symbol_df.index, y=symbol_df[_type],
+        for price in prices:
+            name = price["symbol"][0]
+            fig.add_trace(go.Scatter(x=price.index, y=price[_type],
                                      mode='lines',
-                                     name=symbol))
+                                     name=name))
         fig.update_layout(
             template="plotly_white",
             width=1400, height=500,
@@ -77,6 +69,19 @@ class View:
             plot_bgcolor='rgba(0,0,0,0)'
         )
         self.st.plotly_chart(fig)
+
+    def show_news(self, news):
+        self.st.markdown("___")
+        self.st.subheader("Company News")
+        self.st.markdown("<br>", unsafe_allow_html=True)
+
+        for n in news:
+            self.st.markdown(f"**{n['symbol']} - {n.get('title', '')} [{n.get('date')}]**")
+            self.st.write(n.get("source"))
+            # if n.get("image"):
+            #     self.st.image(n.get("image"))
+            self.st.write(n.get("description"))
+            self.st.markdown("<br><br>", unsafe_allow_html=True)
 
     def symbol_input(self, symbols):
         selected_symbols = self.st.multiselect("Stocks list:", symbols)

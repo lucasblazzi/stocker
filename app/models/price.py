@@ -51,13 +51,18 @@ class Price:
     @staticmethod
     def get_prices(symbols, period):
         parsed_symbols = " ".join(symbols)
+        prices_dfs = list()
         try:
             db = Database()
             prices = db.query_arg(price_series_query, (parsed_symbols, period))
             db.close()
             prices_df = pd.DataFrame(prices, columns=["symbol", "date", "close", "high", "low", "open", "volume"])
-            prices_df.set_index("date", inplace=True)
-            return prices_df
+            for symbol in symbols:
+                symbol_mask = prices_df["symbol"] == symbol
+                symbol_df = prices_df[symbol_mask]
+                symbol_df.set_index("date", inplace=True)
+                prices_dfs.append(symbol_df)
+            return prices_dfs
 
         except Exception as e:
             print(e)
