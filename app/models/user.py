@@ -1,7 +1,6 @@
 import sys
 sys.path.append("..")
 from utils.db import Database
-import logging
 from utils.db_query import login_query, insert_user_query, update_user_query, select_user_by_id
 
 
