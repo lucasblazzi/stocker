@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
-from utils.db_query import insert_company_query, get_company_list
+from utils.db_query import insert_company_query, get_company_list, company_query
 
 
 class Company:
@@ -28,6 +28,24 @@ class Company:
         }
         return company
 
+    @staticmethod
+    def parse_company_result(result):
+        return {
+            "symbol": result[0],
+            "name": result[1],
+            "exchange": result[2],
+            "industry": result[3],
+            "website": result[4],
+            "description": result[5],
+            "CEO": result[6],
+            "sector": result[7],
+            "employees": result[8],
+            "state": result[9],
+            "city": result[10],
+            "country": result[11],
+            "logo": result[12]
+        }
+
     def company_load(self, symbol):
         company = {
             "endpoint": "company",
@@ -37,9 +55,11 @@ class Company:
             "endpoint": "company_logo",
             "symbol": symbol
         }
-
+        print(f"[API] Company - {symbol}")
         company = self.api(company).get()
+        print(f"[API] Company Logo - {symbol}")
         logo = self.api(logo).get()
+        print(f"[API] SUCCESS")
         company["logo"] = logo.get("url")
 
         return company
@@ -51,8 +71,11 @@ class Company:
             companies.append(company)
 
         try:
+            print(f"[DB] Batch Insert - Company")
             db = Database()
             db.batch_insert(insert_company_query, companies)
+            db.close()
+            print(f"[DB] SUCCESS")
             return True, "Inserção feita com sucesso"
 
         except Exception as e:
@@ -68,3 +91,13 @@ class Company:
         except Exception as e:
             print(e)
             return []
+
+    def select_companies(self, symbols):
+        results = list()
+        db = Database()
+        for symbol in symbols:
+            result = db.query_by_id(company_query, (symbol, ))
+            parsed = self.parse_company_result(result)
+            results.append(parsed)
+        db.close()
+        return results

@@ -26,11 +26,11 @@ insert_news_query = """
             """
 
 news_query = """
-            SELECT * FROM stocker.news n WHERE n.symbol = %s ORDER BY n.date DESC
+            SELECT * FROM stocker.news n WHERE n.symbol = %s ORDER BY n.date DESC;
 """
 
 login_query = """
-            SELECT * FROM login (%s, %s)
+            SELECT * FROM login (%s, %s);
             """
 
 insert_company_query = """
@@ -42,6 +42,10 @@ insert_company_query = """
                 employees, state, city, country, logo)=(%(name)s, %(exchange)s, %(industry)s, %(website)s,
                 %(description)s, %(CEO)s, %(sector)s, %(employees)s, %(state)s, %(city)s, %(country)s, %(logo)s);
             """
+
+company_query = """
+            SELECT * FROM stocker.company n WHERE n.symbol = %s;
+"""
 
 get_company_list = """
     SELECT symbol FROM stocker.company

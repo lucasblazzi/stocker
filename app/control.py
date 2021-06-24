@@ -34,7 +34,7 @@ class Control:
             elif arg["loader"] == "price":
                 status, msg = Loader().price_loader(_type=arg["symbols"], _period=arg["period"])
             elif arg["loader"] == "news":
-                status, msg = Loader().news_loader(_type="basic")
+                status, msg = Loader().news_loader(_type=arg["symbols"])
 
             status = "success" if status else "error"
             self.view.show_message("st", status, msg)
@@ -51,7 +51,6 @@ class Control:
                 advisor = User().select_user(arg)
                 if advisor:
                     updated_advisor = self.view.advisor_form(advisor)
-                    print(updated_advisor)
                     if updated_advisor:
                         update, status = User().update_user(updated_advisor)
                         if update:
@@ -73,9 +72,16 @@ class Control:
                         for price in prices:
                             price["percentage_change"] = price["close"].pct_change(1).fillna(0)
                         self.view.plot_price(prices, "percentage_change")
+
                 if arg["news"]["enabled"]:
-                    news = News.select_news(selected_symbols)
+                    news = News().select_news(selected_symbols)
+                    print(news)
                     self.view.show_news(news)
+
+                if arg["company_info"]["enabled"]:
+                    companies = Company().select_companies(selected_symbols)
+                    print(companies)
+                    self.view.show_companies(companies)
 
     def main(self):
         _user, _pass = self.view.login()
@@ -89,8 +95,6 @@ class Control:
             elif _profile == "advisor":
                 self.advisor_controller()
 
-            elif _profile == "client":
-                self.view.client_setup()
         else:
             self.view.show_message("sb", "error", f"Invalid credentials")
 

@@ -4,6 +4,7 @@ from utils.api import Api
 from models.company import Company
 from models.price import Price
 from models.news import News
+import json
 
 
 class Loader:
@@ -12,6 +13,11 @@ class Loader:
         self.company = Company()
         self.price = Price()
         self.news = News()
+
+    @staticmethod
+    def backup(name, items):
+        with open(f"{name}.json", "w") as file:
+            json.dump(items, file)
 
     def get_symbols(self, _type):
         if _type == "S&P 100":
@@ -31,6 +37,7 @@ class Loader:
             company_news = self.news.news_load(symbol=symbol)
             news.extend(company_news)
 
+        self.backup("news", news)
         msg, status = self.news.insert_news(all_news=news)
         return msg, status
 
@@ -41,6 +48,7 @@ class Loader:
             company_prices = self.price.price_load(symbol=symbol, period=_period)
             prices.extend(company_prices)
 
+        self.backup("price", prices)
         msg, status = self.price.insert_prices(_prices=prices)
         return msg, status
 
@@ -51,6 +59,7 @@ class Loader:
             company = self.company.company_load(symbol=symbol)
             companies.append(company)
 
+        self.backup("company", companies)
         msg, status = self.company.insert_company(_companies=companies)
         return msg, status
 

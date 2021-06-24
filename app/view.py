@@ -37,13 +37,13 @@ class View:
     def research_area(self):
         execute = False
         args = {"price": {"enabled": False}, "sector": {"enabled": False}, "news": {"enabled": False},
-                "comapany_info": {"enabled": False}, "volatility": {"enabled": False}}
+                "company_info": {"enabled": False}, "volatility": {"enabled": False}}
         self.st.markdown("___")
         check_cols = self.st.beta_columns(5)
 
         args["price"]["enabled"] = check_cols[0].checkbox("Price")
         args["news"]["enabled"] = check_cols[1].checkbox("News")
-        args["comapany_info"]["enabled"] = check_cols[2].checkbox("Company Information")
+        args["company_info"]["enabled"] = check_cols[2].checkbox("Company Information")
         args["sector"]["enabled"] = check_cols[3].checkbox("Sector Distribution")
 
         if args["price"]["enabled"]:
@@ -70,6 +70,30 @@ class View:
         )
         self.st.plotly_chart(fig)
 
+    def show_companies(self, companies):
+        self.st.markdown("___")
+        self.st.subheader("Company Information")
+        self.st.markdown("<br>", unsafe_allow_html=True)
+
+        for company in companies:
+            basic = self.st.beta_columns(4)
+            basic[0].markdown(f"## **{company['name']} ({company['symbol']})**")
+            if company.get("logo"):
+                basic[3].image(company.get("logo"), width=50)
+            basic[3].markdown("<br>", unsafe_allow_html=True)
+
+            desc = self.st.beta_columns(2)
+            desc[0].markdown(f"**Sector: ** {company.get('sector', '-')}")
+            desc[1].markdown(f"**Industry: ** {company.get('industry', '-')}")
+            desc[0].markdown(f"**Description: ** {company.get('description', '-')}")
+
+            info = self.st.beta_columns(2)
+            info[0].markdown(f"**CEO: ** {company.get('CEO', '-')}")
+            info[1].markdown(f"**Employees: ** {company.get('employees', '-')}")
+            info[0].markdown(f"**Website: ** {company.get('website', '-')}")
+            info[1].markdown(f"**Location: ** {company.get('city', '')} - {company.get('state', '')} - {company.get('country', '')}")
+            self.st.markdown("___")
+
     def show_news(self, news):
         self.st.markdown("___")
         self.st.subheader("Company News")
@@ -77,10 +101,11 @@ class View:
 
         for n in news:
             self.st.markdown(f"**{n['symbol']} - {n.get('title', '')} [{n.get('date')}]**")
-            self.st.write(n.get("source"))
-            # if n.get("image"):
-            #     self.st.image(n.get("image"))
-            self.st.write(n.get("description"))
+            self.st.markdown(f"**Source: ** {n.get('source', '-')}")
+            if n.get("image"):
+                self.st.image(n.get("image"), width=300)
+            self.st.markdown(f"**Description: ** {n.get('description', '-')}")
+            self.st.markdown(f"**Access on: ** {n.get('url', '-')}")
             self.st.markdown("<br><br>", unsafe_allow_html=True)
 
     def symbol_input(self, symbols):
@@ -99,6 +124,7 @@ class View:
             arg = dict()
             self.st.header("Stocker Data Loader")
             arg["symbols"] = self.st.selectbox("Stocks Option:", ("Sample", "S&P 100"))
+            self.st.markdown("<br><br>", unsafe_allow_html=True)
 
             self.st.markdown("___")
             self.st.subheader("Stocker Company Loader")
@@ -107,6 +133,7 @@ class View:
             if self.st.button("Load Stocks"):
                 execute = True
                 arg["loader"] = "company"
+            self.st.markdown("<br><br><br>", unsafe_allow_html=True)
 
             self.st.markdown("___")
             self.st.subheader("Stocker Price Loader")
@@ -116,6 +143,7 @@ class View:
             if self.st.button("Load Prices"):
                 execute = True
                 arg["loader"] = "price"
+            self.st.markdown("<br><br><br>", unsafe_allow_html=True)
 
             self.st.markdown("___")
             self.st.subheader("Stocker News Loader")
@@ -124,6 +152,7 @@ class View:
             if self.st.button("Load News"):
                 execute = True
                 arg["loader"] = "news"
+            self.st.markdown("<br><br><br>", unsafe_allow_html=True)
 
             self.st.markdown("___")
             self.st.subheader("Stocker Full Loader")

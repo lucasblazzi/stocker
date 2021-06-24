@@ -33,15 +33,19 @@ class Price:
             "symbol": symbol,
             "period": period
         }
+        print(f"[API] Prices - {symbol}")
         price = self.api(historical).get()
+        print(f"[API] SUCCESS")
         return price
 
     def insert_prices(self, _prices):
         prices = self._normalize(_prices)
         try:
+            print(f"[DB] Batch Insert - Prices")
             db = Database()
             db.batch_insert(insert_prices_query, prices)
             db.close()
+            print(f"[DB] SUCCESS")
             return True, "Inserção feita com sucesso"
 
         except Exception as e:

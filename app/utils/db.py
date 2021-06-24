@@ -1,4 +1,5 @@
 import psycopg2
+import psycopg2.extras
 from psycopg2.extras import DictCursor
 from psycopg2.extras import execute_batch
 import psycopg2.errors
@@ -52,7 +53,6 @@ class Database:
             return e.pgcode
         return result
 
-
     def insert_update(self, query, value):
         try:
             self.cur.execute(query, value)
@@ -67,7 +67,6 @@ class Database:
         try:
             execute_batch(self.cur, query, values)
             self.conn.commit()
-            print("fez insert")
         except psycopg2.OperationalError as e:
             print(e)
             return e.pgcode
