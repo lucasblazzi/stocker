@@ -20,7 +20,8 @@ class Api:
             "sectors": "/ref-data/sectors",
             "company": f"/stock/{self.symbol}/company",
             "historical": f"/stock/{self.symbol}/chart/{self.period}",
-            "company_logo": f"/stock/{self.symbol}/logo"
+            "company_logo": f"/stock/{self.symbol}/logo",
+            "news": f"/stock/{self.symbol}/news/last/"
         }
         return endpoints.get(self.endpoint)
 
