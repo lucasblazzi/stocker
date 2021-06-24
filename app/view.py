@@ -37,25 +37,29 @@ class View:
     def research_area(self):
         execute = False
         args = {"price": {"enabled": False}, "sector": {"enabled": False}, "news": {"enabled": False},
-                "company_info": {"enabled": False}, "volatility": {"enabled": False}}
+                "company_info": {"enabled": False}, "volatility": {"enabled": False}, "return": {"enabled": False},
+                "raw_price": {"enabled": False}}
         self.st.markdown("___")
         check_cols = self.st.beta_columns(5)
 
         args["price"]["enabled"] = check_cols[0].checkbox("Price")
-        args["news"]["enabled"] = check_cols[1].checkbox("News")
-        args["company_info"]["enabled"] = check_cols[2].checkbox("Company Information")
-        args["sector"]["enabled"] = check_cols[3].checkbox("Sector Distribution")
+        args["company_info"]["enabled"] = check_cols[1].checkbox("Company Information")
+        args["sector"]["enabled"] = check_cols[2].checkbox("Sector Distribution")
+        args["news"]["enabled"] = check_cols[3].checkbox("News")
 
         if args["price"]["enabled"]:
             self.st.markdown("___")
-            self.st.subheader("Price")
+            self.st.subheader("Price Insights")
             price_cols = self.st.beta_columns(5)
             args["price"]["_type"] = price_cols[0].selectbox("Price type:", ("close", "open", "high", "low"))
             args["price"]["period"] = price_cols[1].selectbox("Period:", ("1m", "6m", "1y", "2y", "5y", "max"))
-            args["volatility"]["enabled"] = price_cols[3].checkbox("Volatility")
+            args["raw_price"]["enabled"] = price_cols[2].checkbox("Raw Price")
+            args["return"]["enabled"] = price_cols[3].checkbox("Return")
+            args["volatility"]["enabled"] = price_cols[4].checkbox("Volatility")
         return execute, args
 
     def plot_price(self, prices, _type):
+        self.st.subheader(_type.capitalize())
         fig = go.Figure()
         for price in prices:
             name = price["symbol"][0]

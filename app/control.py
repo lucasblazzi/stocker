@@ -65,23 +65,28 @@ class Control:
             selected_symbols = self.view.symbol_input(sum(symbols, []))
             if selected_symbols:
                 execute, arg = self.view.research_area()
-                if arg["price"]["enabled"]:
-                    prices = Price.get_prices(selected_symbols, arg["price"]["period"])
-                    self.view.plot_price(prices, "close")
-                    if arg["volatility"]["enabled"]:
-                        for price in prices:
-                            price["percentage_change"] = price["close"].pct_change(1).fillna(0)
-                        self.view.plot_price(prices, "percentage_change")
-
-                if arg["news"]["enabled"]:
-                    news = News().select_news(selected_symbols)
-                    print(news)
-                    self.view.show_news(news)
 
                 if arg["company_info"]["enabled"]:
                     companies = Company().select_companies(selected_symbols)
-                    print(companies)
                     self.view.show_companies(companies)
+
+                if arg["raw_price"]["enabled"]:
+                    prices = Price.get_prices(selected_symbols, arg["price"]["period"])
+                    self.view.plot_price(prices, "close")
+                    for price in prices:
+                        price["volatility"] = price["close"].pct_change(1).fillna(0)
+                        price["return"] = price["volatility"].add(1).cumprod().sub(1) * 100
+
+                    if arg["return"]["enabled"]:
+                        self.view.plot_price(prices, "return")
+
+                    if arg["volatility"]["enabled"]:
+                        self.view.plot_price(prices, "volatility")
+
+                if arg["news"]["enabled"]:
+                    news = News().select_news(selected_symbols)
+                    self.view.show_news(news)
+
 
     def main(self):
         _user, _pass = self.view.login()
