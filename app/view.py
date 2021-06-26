@@ -50,13 +50,35 @@ class View:
         if args["price"]["enabled"]:
             self.st.markdown("___")
             self.st.subheader("Price Insights")
-            price_cols = self.st.beta_columns(5)
+            price_cols = self.st.beta_columns(6)
             args["price"]["_type"] = price_cols[0].selectbox("Price type:", ("close", "open", "high", "low"))
             args["price"]["period"] = price_cols[1].selectbox("Period:", ("1m", "6m", "1y", "2y", "5y", "max"))
-            args["raw_price"]["enabled"] = price_cols[2].checkbox("Raw Price")
-            args["return"]["enabled"] = price_cols[3].checkbox("Return")
-            args["volatility"]["enabled"] = price_cols[4].checkbox("Volatility")
+            args["raw_price"]["enabled"] = price_cols[3].checkbox("Raw Price")
+            args["return"]["enabled"] = price_cols[4].checkbox("Return")
+            args["volatility"]["enabled"] = price_cols[5].checkbox("Volatility")
         return execute, args
+
+    def show_cryptos(self, cryptos):
+        for crypto in cryptos:
+            cols = self.st.beta_columns(3)
+            cols[0].markdown(f"**Symbol: ** {crypto.get('symbol', '-')}")
+            cols[1].markdown(f"**Name: ** {crypto.get('name', '-')}")
+            cols[2].markdown(f"**Price: ** {crypto.get('price', '-')}")
+
+    def crypto_form(self):
+        self.st.markdown("<br><br>", unsafe_allow_html=True)
+        self.st.markdown("___")
+        _input = self.st.text_input("Cryptocurrency")
+        return _input
+
+    def sector_distribution(self, sectors):
+        self.st.subheader("Sector Distribution")
+        r = sectors['sector'].value_counts()
+        fig = go.Figure(data=[go.Pie(labels=r.index, values=r)])
+        fig.update_layout(
+            width=600, height=600,
+        )
+        self.st.plotly_chart(fig)
 
     def plot_price(self, prices, _type):
         self.st.subheader(_type.capitalize())
@@ -159,9 +181,18 @@ class View:
             self.st.markdown("<br><br><br>", unsafe_allow_html=True)
 
             self.st.markdown("___")
+            self.st.subheader("Stocker Crypto Loader")
+            self.show_message("st", "info", "Crypto Loading: Load on our database information about all "
+                                            "cryptocurrencies available on the market")
+            if self.st.button("Load Crypto"):
+                execute = True
+                arg["loader"] = "crypto"
+            self.st.markdown("<br><br><br>", unsafe_allow_html=True)
+
+            self.st.markdown("___")
             self.st.subheader("Stocker Full Loader")
             self.show_message("st", "info", "Full Loading: Load on our database all information listed above: companies"
-                                            "prices and news")
+                                            " prices, news and cryptocurrencies")
             if self.st.button("Full Load"):
                 execute = True
                 arg["loader"] = "full"

@@ -5,6 +5,7 @@ from models.user import User
 from models.company import Company
 from models.price import Price
 from models.news import News
+from models.crypto import Crypto
 
 
 class Control:
@@ -35,6 +36,8 @@ class Control:
                 status, msg = Loader().price_loader(_type=arg["symbols"], _period=arg["period"])
             elif arg["loader"] == "news":
                 status, msg = Loader().news_loader(_type=arg["symbols"])
+            elif arg["loader"] == "crypto":
+                status, msg = Loader().crypto_loader(_type=arg["symbols"])
 
             status = "success" if status else "error"
             self.view.show_message("st", status, msg)
@@ -70,23 +73,30 @@ class Control:
                     companies = Company().select_companies(selected_symbols)
                     self.view.show_companies(companies)
 
-                if arg["raw_price"]["enabled"]:
+                if arg["price"]["enabled"]:
                     prices = Price.get_prices(selected_symbols, arg["price"]["period"])
-                    self.view.plot_price(prices, "close")
                     for price in prices:
                         price["volatility"] = price["close"].pct_change(1).fillna(0)
                         price["return"] = price["volatility"].add(1).cumprod().sub(1) * 100
-
+                    if arg["raw_price"]["enabled"]:
+                        self.view.plot_price(prices, "close")
                     if arg["return"]["enabled"]:
                         self.view.plot_price(prices, "return")
-
                     if arg["volatility"]["enabled"]:
                         self.view.plot_price(prices, "volatility")
+
+                if arg["sector"]["enabled"]:
+                    sectors = Company().select_sectors(selected_symbols)
+                    self.view.sector_distribution(sectors)
 
                 if arg["news"]["enabled"]:
                     news = News().select_news(selected_symbols)
                     self.view.show_news(news)
 
+            crypto_input = self.view.crypto_form()
+            if crypto_input:
+                cryptos = Crypto.select_cryptos(crypto_input)
+                self.view.show_cryptos(cryptos)
 
     def main(self):
         _user, _pass = self.view.login()

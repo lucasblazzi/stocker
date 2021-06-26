@@ -47,6 +47,10 @@ company_query = """
             SELECT * FROM stocker.company n WHERE n.symbol = %s;
 """
 
+sector_query = """
+            SELECT c.symbol, c.sector from stocker.company c WHERE c.symbol = ANY(string_to_array(%s, ' '))
+"""
+
 get_company_list = """
     SELECT symbol FROM stocker.company
     """
@@ -54,3 +58,14 @@ get_company_list = """
 price_series_query = """
         SELECT * FROM get_prices(%s, %s)
         """
+
+insert_crypto_query = """
+            INSERT INTO stocker.crypto (symbol, name, currency, price, price_date) VALUES 
+                (%(symbol)s, %(name)s, %(currency)s, %(price)s, %(price_date)s)
+            ON CONFLICT (symbol) DO UPDATE SET (name, currency, price, price_date)=(%(name)s, %(currency)s, %(price)s, 
+                %(price_date)s);
+            """
+
+crypto_query = """
+    SELECT c.symbol, c.name, c.price, c.price_date FROM stocker.crypto c WHERE c.name like %s;
+    """

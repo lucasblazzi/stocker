@@ -1,10 +1,12 @@
 import sys
 sys.path.append("..")
+import json
+
 from utils.api import Api
 from models.company import Company
 from models.price import Price
 from models.news import News
-import json
+from models.crypto import Crypto
 
 
 class Loader:
@@ -13,6 +15,7 @@ class Loader:
         self.company = Company()
         self.price = Price()
         self.news = News()
+        self.crypto = Crypto()
 
     @staticmethod
     def backup(name, items):
@@ -63,10 +66,17 @@ class Loader:
         msg, status = self.company.insert_company(_companies=companies)
         return msg, status
 
+    def crypto_loader(self, _type="Sample"):
+        cryptos = self.crypto.crypto_load()
+        self.backup("crypto", cryptos)
+        msg, status = self.crypto.insert_crypto(_cryptos=cryptos)
+        return msg, status
+
     def full_loader(self, _type="Sample"):
         companies = list()
         prices = list()
         news = list()
+        cryptos = list()
 
         symbol_list = self.get_symbols(_type)
 
@@ -74,6 +84,7 @@ class Loader:
             company = self.company.company_load(symbol=symbol)
             company_prices = self.price.price_load(symbol=symbol, period="5y")
             company_news = self.news.news_load(symbol=symbol)
+            cryptos = self.crypto.crypto_load()
             companies.append(company)
             prices.extend(company_prices)
             news.extend(company_news)
@@ -81,15 +92,19 @@ class Loader:
         msg1, status1 = self.company.insert_company(_companies=companies)
         msg2, status2 = self.price.insert_prices(_prices=prices)
         msg3, status3 = self.news.insert_news(all_news=news)
+        msg4, status4 = self.crypto.insert_crypto(_cryptos=cryptos)
 
-        if not msg1:
+        if msg1:
             msg = msg1
             status = status1
         elif msg2:
             msg = msg2
             status = status2
-        else:
+        elif msg3:
             msg = msg3
             status = status3
+        else:
+            msg = msg4
+            status = status4
 
         return msg, status

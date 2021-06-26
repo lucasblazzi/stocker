@@ -2,8 +2,8 @@ import sys
 sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
-from utils.db_query import insert_company_query, get_company_list, company_query
-
+from utils.db_query import insert_company_query, get_company_list, company_query, sector_query
+import pandas as pd
 
 class Company:
     def __init__(self):
@@ -101,3 +101,17 @@ class Company:
             results.append(parsed)
         db.close()
         return results
+
+    @staticmethod
+    def select_sectors(symbols):
+        parsed_symbols = " ".join(symbols)
+        try:
+            db = Database()
+            sectors = db.query_arg(sector_query, (parsed_symbols, ))
+            db.close()
+
+            sectors_df = pd.DataFrame(sectors, columns=["symbol", "sector"])
+            return sectors_df
+        except Exception as e:
+            print(e)
+            return False
