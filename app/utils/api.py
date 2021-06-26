@@ -17,6 +17,8 @@ class Api:
     def _endpoint(self):
         endpoints = {
             "symbols": "/ref-data/symbols",
+            "crypto_symbols": "/ref-data/crypto/symbols",
+            "crypto_prices": f"/crypto/{self.symbol}/price",
             "sectors": "/ref-data/sectors",
             "company": f"/stock/{self.symbol}/company",
             "historical": f"/stock/{self.symbol}/chart/{self.period}",
