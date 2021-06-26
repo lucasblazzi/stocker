@@ -1,35 +1,29 @@
 import requests
 import json
+import sys
+sys.path.append("..")
+from utils.config import TOKEN
+from utils.config import API_URL
 
-from .config import TOKEN
-from .config import API_URL
 
-
-class API:
+class Api:
     def __init__(self, obj):
         self.endpoint = obj.get("endpoint")
         self.symbol = obj.get("symbol")
         self.sector = obj.get("sector")
         self.period = obj.get("period")
         self.limit = obj.get("limit")
-        self.is_mock = obj.get("is_mock", False)
 
     def _endpoint(self):
         endpoints = {
             "symbols": "/ref-data/symbols",
             "crypto_symbols": "/ref-data/crypto/symbols",
+            "crypto_prices": f"/crypto/{self.symbol}/price",
             "sectors": "/ref-data/sectors",
-            "sectors_performance": "/stock/market/sector-performance",
-            "upcoming_ipos": "/stock/market/upcoming-ipos",
             "company": f"/stock/{self.symbol}/company",
             "historical": f"/stock/{self.symbol}/chart/{self.period}",
-            "dividends": f"/stock/dividends/{self.symbol}/last/{self.limit}",
-            "return_of_capital": f"/time-series/advanced_return_of_capital/{self.symbol}?last={self.limit}",
-            "news": f"/stock/{self.symbol}/news/last/{self.limit}",
-            "cash_flow": f"/stock/{self.symbol}/news/last/{self.limit}",
-            "balance_sheet": f"/stock/{self.symbol}/balance-sheet/last/{self.limit}",
-            "fundamentals": f"/time-series/fundamentals/{self.symbol}/last/{self.limit}",
-            "collection": f"/stock/market/collection/sector?collectionName={self.sector}",
+            "company_logo": f"/stock/{self.symbol}/logo",
+            "news": f"/stock/{self.symbol}/news/last/"
         }
         return endpoints.get(self.endpoint)
 
