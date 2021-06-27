@@ -110,3 +110,13 @@ colunas user e password com o objetivo da melhorar a validação de usuário. Os
 testes não justificaram a implementação do índice já que os resultados foram muito 
 similares e um indexador multiplo com pouca diferença de performance não justificaria 
 o uso extra de memória.
+
+
+## Contagem de dados após a carga
+
+**Obs: a tabela user foi criada para demonstração de roles e seus dados não 
+são resultados da carga da API.**
+
+Para a contagem de rows foi executada a function (https://blog.yugabyte.com/row-counts-of-tables-in-a-sql-schema-database-postgresql-yugabytedb/)
+
+![image info](images/rows_count.PNG)
