@@ -1,5 +1,6 @@
 # Stocker
 
+![image info](images/bd_model.PNG)
 
 ## Definição do modelo e dados da api
 Para a elaboração do modelo relacional do banco de dados foi coletada
@@ -52,7 +53,6 @@ Crypto
 
 
 **O schema resultante pode ser encontrado no arquivo stocker.sql**
-
 
 ## Segurança
 
