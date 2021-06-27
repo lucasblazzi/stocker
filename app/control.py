@@ -75,7 +75,9 @@ class Control:
                         price["volatility"] = price["close"].pct_change(1).fillna(0)
                         price["return"] = price["volatility"].add(1).cumprod().sub(1) * 100
                     if arg["raw_price"]["enabled"]:
-                        self.view.plot_price(prices, "close")
+                        self.view.plot_price(prices, arg["price"]["_type"])
+                    if arg["volume"]["enabled"]:
+                        self.view.plot_price(prices, "volume")
                     if arg["return"]["enabled"]:
                         self.view.plot_price(prices, "return")
                     if arg["volatility"]["enabled"]:

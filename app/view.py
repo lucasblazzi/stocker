@@ -38,7 +38,7 @@ class View:
         execute = False
         args = {"price": {"enabled": False}, "sector": {"enabled": False}, "news": {"enabled": False},
                 "company_info": {"enabled": False}, "volatility": {"enabled": False}, "return": {"enabled": False},
-                "raw_price": {"enabled": False}}
+                "raw_price": {"enabled": False}, "volume": {"enabled": False}}
         self.st.markdown("___")
         check_cols = self.st.beta_columns(5)
 
@@ -50,12 +50,13 @@ class View:
         if args["price"]["enabled"]:
             self.st.markdown("___")
             self.st.subheader("Price Insights")
-            price_cols = self.st.beta_columns(6)
+            price_cols = self.st.beta_columns(7)
             args["price"]["_type"] = price_cols[0].selectbox("Price type:", ("close", "open", "high", "low"))
             args["price"]["period"] = price_cols[1].selectbox("Period:", ("ytd", "1m", "6m", "1y", "2y", "5y", "max"))
             args["raw_price"]["enabled"] = price_cols[3].checkbox("Raw Price")
-            args["return"]["enabled"] = price_cols[4].checkbox("Return")
-            args["volatility"]["enabled"] = price_cols[5].checkbox("Volatility")
+            args["volume"]["enabled"] = price_cols[4].checkbox("Volume")
+            args["return"]["enabled"] = price_cols[5].checkbox("Return")
+            args["volatility"]["enabled"] = price_cols[6].checkbox("Volatility")
         return execute, args
 
     def show_cryptos(self, cryptos):

@@ -2,7 +2,10 @@
 
 ## Sobre
 
-Stocker é uma aplicação de analise de investimento, consumindo dados da API [IEX Cloud](https://iexcloud.io). Desenvolvido na disciplina de Banco de Dados II na [Universidade Federal de Itajubá](https://unifei.edu.br)
+Stocker é uma aplicação para auxílio na análise de investimento, consumindo dados da API [IEX Cloud](https://iexcloud.io). Desenvolvido na disciplina de Banco de Dados II na [Universidade Federal de Itajubá](https://unifei.edu.br).
+A aplicação possui duas áreas: 
+- **Admin:** interface para carga de dados da API e área para controle dos advisors.
+- **Advisor:** interface de research onde o advisor pode ver informações de preços de ações norte-americanas (fechamento, abertura, máxima, mínima), visualizações de rentabilidade e volatilidade, informações de cadastro/notícias das empresas solicitadas e cotação de criptomoedas.
 <br>
 
 <div align="center">
