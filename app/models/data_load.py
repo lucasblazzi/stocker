@@ -10,7 +10,8 @@ from models.crypto import Crypto
 
 
 class Loader:
-    def __init__(self):
+    def __init__(self, profile):
+        self.profile = profile
         self.api = Api
         self.company = Company()
         self.price = Price()

@@ -1,5 +1,7 @@
 # Specific files
 app/utils/config.py
+config.py
+utils/config.py
 mock
 .idea
 

@@ -4,14 +4,15 @@ from psycopg2.extras import DictCursor
 from psycopg2.extras import execute_batch
 import psycopg2.errors
 
-from utils.config import DATABASE
-from utils.config import DB_HOST
-from utils.config import DB_USER
-from utils.config import DB_PASS
+from utils.config import CREDENTIALS
 
 
 class Database:
-    def __init__(self, host=DB_HOST, db=DATABASE, user=DB_USER, password=DB_PASS):
+    def __init__(self, profile):
+        host = CREDENTIALS["DB_HOST"]
+        db = CREDENTIALS["DATABASE"]
+        user = CREDENTIALS["LOGIN"][profile]["user"]
+        password = CREDENTIALS["LOGIN"][profile]["pass"]
         self.conn = psycopg2.connect(host=host, database=db, user=user, password=password)
         self.cur = self.conn.cursor(cursor_factory=DictCursor)
 
@@ -32,6 +33,7 @@ class Database:
             results = self.cur.fetchall()
             self.conn.commit()
         except psycopg2.OperationalError as e:
+            print(e)
             return e.pgcode
         return results
 
@@ -41,6 +43,7 @@ class Database:
             result = self.cur.fetchone()
             self.conn.commit()
         except psycopg2.OperationalError as e:
+            print(e)
             return e.pgcode
         return result
 
@@ -50,6 +53,7 @@ class Database:
             result = self.cur.fetchall()
             self.conn.commit()
         except psycopg2.OperationalError as e:
+            print(e)
             return e.pgcode
         return result
 

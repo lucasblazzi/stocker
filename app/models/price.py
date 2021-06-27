@@ -3,12 +3,15 @@ sys.path.append("..")
 from utils.api import Api
 from utils.db import Database
 from datetime import datetime
-from utils.db_query import insert_prices_query, price_series_query
+from datetime import date
+from dateutil.relativedelta import relativedelta
+from utils.db_query import insert_prices_query, price_series_query, price_series_query2
 import pandas as pd
 
 
 class Price:
-    def __init__(self):
+    def __init__(self, profile):
+        self.profile = profile
         self.api = Api
 
     @staticmethod
@@ -42,7 +45,7 @@ class Price:
         prices = self._normalize(_prices)
         try:
             print(f"[DB] Batch Insert - Prices")
-            db = Database()
+            db = Database(self.profile)
             db.batch_insert(insert_prices_query, prices)
             db.close()
             print(f"[DB] SUCCESS")
@@ -53,12 +56,33 @@ class Price:
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"
 
     @staticmethod
-    def get_prices(symbols, period):
+    def get_dates(period):
+        end_date = datetime.today()
+        if period == "1m":
+            start_date = end_date - relativedelta(months=1)
+        elif period == "6m":
+            start_date = end_date - relativedelta(months=6)
+        elif period == "1y":
+            start_date = end_date - relativedelta(years=1)
+        elif period == "2y":
+            start_date = end_date - relativedelta(years=2)
+        elif period == "3y":
+            start_date = end_date - relativedelta(years=3)
+        elif period == "5y":
+            start_date = end_date - relativedelta(years=5)
+        elif period == "ytd":
+            start_date = date(end_date.year, 1, 1)
+        else:
+            start_date = end_date - relativedelta(years=10)
+        return start_date, end_date
+
+    def get_prices(self, symbols, period):
         parsed_symbols = " ".join(symbols)
         prices_dfs = list()
+        start_date, end_date = self.get_dates(period)
         try:
-            db = Database()
-            prices = db.query_arg(price_series_query, (parsed_symbols, period))
+            db = Database(self.profile)
+            prices = db.query_arg(price_series_query2, (parsed_symbols, start_date, end_date))
             db.close()
             prices_df = pd.DataFrame(prices, columns=["symbol", "date", "close", "high", "low", "open", "volume"])
             for symbol in symbols:

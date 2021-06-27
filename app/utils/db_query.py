@@ -13,6 +13,10 @@ select_user_by_id = """
             SELECT * FROM stocker.user WHERE stocker.user.cpf = %s;
             """
 
+list_user_query = """
+            SELECT u.name, u.cpf, u.cvm_license FROM stocker.user u WHERE u.profile = 'advisor';
+        """
+
 insert_prices_query = """
             INSERT INTO stocker.price (symbol, date, open, close, high, low, volume) VALUES 
                 (%(symbol)s, %(date)s, %(open)s, %(close)s, %(high)s, %(low)s, %(volume)s)
@@ -57,6 +61,10 @@ get_company_list = """
 
 price_series_query = """
         SELECT * FROM get_prices(%s, %s)
+        """
+
+price_series_query2 = """
+        SELECT * FROM stocker.price p WHERE p.symbol = ANY(string_to_array(%s, ' ')) and p.date BETWEEN %s AND %s;
         """
 
 insert_crypto_query = """
