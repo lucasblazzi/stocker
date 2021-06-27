@@ -1,3 +1,5 @@
+-- TABLES SCHEMA
+
 CREATE SCHEMA IF NOT EXISTS stocker
 
 CREATE TYPE stocker.profile AS ENUM (
@@ -6,13 +8,13 @@ CREATE TYPE stocker.profile AS ENUM (
 );
 
 CREATE TABLE IF NOT EXISTS stocker.user(
-    cpf INT NOT NULL PRIMARY KEY,
+    cpf BIGINT NOT NULL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
 	username VARCHAR(20) UNIQUE NOT NULL,
 	password VARCHAR(100) NOT NULL,
     email VARCHAR(50) NOT NULL,
 	profile stocker.profile NOT NULL,
-    cvm_license INT
+    cvm_license INT UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS stocker.company (
@@ -65,11 +67,30 @@ CREATE TABLE IF NOT EXISTS stocker.crypto (
 );
 
 
+-- INDEXES
 
 CREATE UNIQUE INDEX login_idx ON stocker.user (username, password);
 
 CREATE extension pg_trgm;
 CREATE INDEX name_crypto_idx ON stocker.crypto USING gin (name gin_trgm_ops);
+
+
+-- ROLES
+
+CREATE ROLE login WITH LOGIN PASSWORD 'stocker_login';
+GRANT USAGE ON SCHEMA stocker TO login;
+GRANT EXECUTE ON FUNCTION login TO login;
+GRANT SELECT ON TABLE stocker.user TO login;
+
+CREATE ROLE advisor WITH LOGIN PASSWORD 'stocker_advisor';
+GRANT USAGE ON SCHEMA stocker TO advisor;
+GRANT SELECT ON TABLE stocker.company TO advisor;
+GRANT SELECT ON TABLE stocker.crypto TO advisor;
+GRANT SELECT ON TABLE stocker.news TO advisor;
+GRANT SELECT ON TABLE stocker.price TO advisor;
+
+
+-- FUNCTIONS
 
 CREATE EXTENSION pgcrypto;
 

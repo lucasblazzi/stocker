@@ -52,7 +52,7 @@ class View:
             self.st.subheader("Price Insights")
             price_cols = self.st.beta_columns(6)
             args["price"]["_type"] = price_cols[0].selectbox("Price type:", ("close", "open", "high", "low"))
-            args["price"]["period"] = price_cols[1].selectbox("Period:", ("1m", "6m", "1y", "2y", "5y", "max"))
+            args["price"]["period"] = price_cols[1].selectbox("Period:", ("ytd", "1m", "6m", "1y", "2y", "5y", "max"))
             args["raw_price"]["enabled"] = price_cols[3].checkbox("Raw Price")
             args["return"]["enabled"] = price_cols[4].checkbox("Return")
             args["volatility"]["enabled"] = price_cols[5].checkbox("Volatility")
@@ -133,6 +133,13 @@ class View:
             self.st.markdown(f"**Description: ** {n.get('description', '-')}")
             self.st.markdown(f"**Access on: ** {n.get('url', '-')}")
             self.st.markdown("<br><br>", unsafe_allow_html=True)
+
+    def list_advisors(self, advisors):
+        for advisor in advisors:
+            cols = self.st.beta_columns(3)
+            cols[0].markdown(f"**Name: ** {advisor[0]}")
+            cols[1].markdown(f"**CPF: ** {advisor[1]}")
+            cols[2].markdown(f"**CVM: ** {advisor[2]}")
 
     def symbol_input(self, symbols):
         selected_symbols = self.st.multiselect("Stocks list:", symbols)
@@ -230,9 +237,7 @@ class View:
                                            value=advisor["username"]) if advisor
             else cols[1].text_input("Usuário", max_chars=15, type='default', help="Usuário para login"),
 
-            "password": cols[2].text_input("Senha", max_chars=15, type='password', help="Senha para login",
-                                           value=advisor["password"]) if advisor
-            else cols[2].text_input("Senha", max_chars=15, type='password', help="Senha para login"),
+            "password": cols[2].text_input("Senha", max_chars=15, type='password', help="Senha para login"),
 
             "cpf": advisor["cpf"] if advisor
             else cols[2].text_input("CPF", max_chars=15, type='default', help="CPF: 123.123.123-12"),

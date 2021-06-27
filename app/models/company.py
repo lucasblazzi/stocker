@@ -5,8 +5,10 @@ from utils.db import Database
 from utils.db_query import insert_company_query, get_company_list, company_query, sector_query
 import pandas as pd
 
+
 class Company:
-    def __init__(self):
+    def __init__(self, profile):
+        self.profile = profile
         self.api = Api
 
     @staticmethod
@@ -72,7 +74,7 @@ class Company:
 
         try:
             print(f"[DB] Batch Insert - Company")
-            db = Database()
+            db = Database(self.profile)
             db.batch_insert(insert_company_query, companies)
             db.close()
             print(f"[DB] SUCCESS")
@@ -82,10 +84,9 @@ class Company:
             print(e)
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"
 
-    @staticmethod
-    def get_symbol_list():
+    def get_symbol_list(self):
         try:
-            db = Database()
+            db = Database(self.profile)
             symbols = db.query(get_company_list)
             return symbols
         except Exception as e:
@@ -94,7 +95,7 @@ class Company:
 
     def select_companies(self, symbols):
         results = list()
-        db = Database()
+        db = Database(self.profile)
         for symbol in symbols:
             result = db.query_by_id(company_query, (symbol, ))
             parsed = self.parse_company_result(result)
@@ -102,11 +103,10 @@ class Company:
         db.close()
         return results
 
-    @staticmethod
-    def select_sectors(symbols):
+    def select_sectors(self, symbols):
         parsed_symbols = " ".join(symbols)
         try:
-            db = Database()
+            db = Database(self.profile)
             sectors = db.query_arg(sector_query, (parsed_symbols, ))
             db.close()
 
