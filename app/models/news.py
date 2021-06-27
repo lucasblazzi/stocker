@@ -7,7 +7,8 @@ from utils.db_query import insert_news_query, news_query
 
 
 class News:
-    def __init__(self):
+    def __init__(self, profile):
+        self.profile = profile
         self.api = Api
 
     @staticmethod
@@ -55,7 +56,7 @@ class News:
 
         try:
             print(f"[DB] Batch Insert - News")
-            db = Database()
+            db = Database(self.profile)
             db.batch_insert(insert_news_query, normalized_news)
             db.close()
             print(f"[DB] SUCCESS")
@@ -67,7 +68,7 @@ class News:
 
     def select_news(self, symbols):
         results = list()
-        db = Database()
+        db = Database(self.profile)
         for symbol in symbols:
             result = db.query_by_id(news_query, (symbol, ))
             parsed = self.parse_news_result(result)

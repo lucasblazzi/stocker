@@ -8,7 +8,8 @@ from datetime import date
 
 
 class Crypto:
-    def __init__(self):
+    def __init__(self, profile):
+        self.profile = profile
         self.api = Api
 
     @staticmethod
@@ -49,7 +50,7 @@ class Crypto:
 
         try:
             print(f"[DB] Batch Insert - Crypto")
-            db = Database()
+            db = Database(self.profile)
             db.batch_insert(insert_crypto_query, cryptos)
             db.close()
             print(f"[DB] SUCCESS")
@@ -59,10 +60,9 @@ class Crypto:
             print(e)
             return False, f"Ocorreu um erro na inserção no banco de dados: {e}"
 
-    @staticmethod
-    def select_cryptos(_input):
+    def select_cryptos(self, _input):
         arg = f"%{_input}%"
-        db = Database()
+        db = Database(self.profile)
         result = db.query_arg(crypto_query, (arg,))
         db.close()
         return result
