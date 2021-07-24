@@ -6,6 +6,9 @@ from models.company import Company
 from models.price import Price
 from models.news import News
 from models.crypto import Crypto
+from utils.db import Database
+from psycopg2 import sql
+import pandas as pd
 
 
 class Control:
@@ -61,6 +64,13 @@ class Control:
             advisors = User(_profile).get_user_list()
             self.view.list_advisors(advisors)
 
+        elif admin_option == "Ad-Hoc":
+            symbols = Company(_profile).get_symbol_list()
+            ad_hoc_options = self.view.ad_hoc_form(symbols)
+            if ad_hoc_options:
+                ad_hoc = self.ad_hoc_compose(ad_hoc_options, _profile)
+                self.view.ad_hoc_plot(ad_hoc)
+
     def advisor_controller(self, _profile):
         option = self.view.advisor_setup()
         if option == "Research":
@@ -114,6 +124,139 @@ class Control:
 
         else:
             self.view.show_message("sb", "error", f"Invalid credentials")
+
+    @staticmethod
+    def data_shape(results, fields):
+        parsed = list()
+        for result in results:
+            parsed.append({fields[idx]: result[idx] for idx, r in enumerate(result)})
+        return parsed
+
+    @staticmethod
+    def simple_company_query(filters):
+        order = "ASC" if filters["company"]["specific"]["order_method"][0] == "Ascending" else "DESC"
+
+        query = sql.SQL("SELECT {fields} FROM {table} WHERE symbol = ANY(%s) "
+                        "ORDER BY {order_by} {order_method} LIMIT {limit}").format(
+            fields=sql.SQL(',').join([
+                sql.Identifier(field) for field in filters["company"]["specific"]["fields"]]),
+            table=sql.Identifier("stocker", "company"),
+            order_by=sql.Identifier(filters["company"]["specific"]["order_by"][0]),
+            order_method=sql.SQL(order),
+            limit=sql.Literal(filters["company"]["specific"]["limit"][0])
+        )
+        return query
+
+    @staticmethod
+    def filter_company_query(filters):
+        order = "ASC" if filters["company"]["specific"]["order_method"][0] == "Ascending" else "DESC"
+        op = filters["company"]["specific"]["rule_filter"]["operation"]
+        if op == "Greater than":
+            operation = ">"
+        elif op == "Less than":
+            operation = "<"
+        else:
+            operation = "="
+        query = sql.SQL("SELECT {fields} FROM {table} WHERE symbol = ANY(%s) AND {field} {operation} {_val}"
+                        "ORDER BY {order_by} {order_method} LIMIT {limit}").format(
+            fields=sql.SQL(',').join([
+                sql.Identifier(field) for field in filters["company"]["specific"]["fields"]]),
+            table=sql.Identifier("stocker", "company"),
+            field=sql.Identifier(filters["company"]["specific"]["rule_filter"]["field"]),
+            operation=sql.SQL(operation),
+            _val=sql.Literal(filters["company"]["specific"]["rule_filter"]["value"]),
+            order_by=sql.Identifier(filters["company"]["specific"]["order_by"][0]),
+            order_method=sql.SQL(order),
+            limit=sql.Literal(filters["company"]["specific"]["limit"][0])
+        )
+        return query
+
+    @staticmethod
+    def price_query(filters):
+        query = sql.SQL("SELECT date, symbol, {field} FROM {table} WHERE symbol = ANY(%s) "
+                        "AND price.date BETWEEN {start_date} AND {end_date}").format(
+            table=sql.Identifier("stocker", "price"),
+            field=sql.Identifier(filters["price"]["specific"]["type"][0]),
+            start_date=sql.Literal(filters["price"]["specific"]["start_date"]),
+            end_date=sql.Literal(filters["price"]["specific"]["end_date"]),
+        )
+        return query
+
+    @staticmethod
+    def insight_price_query(compare, _type):
+        query = sql.SQL("SELECT symbol, {_type}, date FROM {table} WHERE {_type} = (SELECT {compare}({_type}) FROM {table})").format(
+            table=sql.Identifier("stocker", "price"),
+            _type=sql.Identifier(_type),
+            compare=sql.SQL(compare)
+        )
+        return query
+
+    def ad_hoc_compose(self, filters, _profile):
+        results = {"company": {"specific": [], "insights": {"highest_emp": [], "tech": [], "not_us": []}, "fields": []},
+                   "price": {"specific": pd.DataFrame(), "type": None, "insights": {"highest_close": [], "lowest_close": [], "highest_volume": [], "lowest_volume": []}}}
+        if filters["company"]["specific"]["company_list"] and filters["company"]["specific"]["fields"]:
+            if not filters["company"]["specific"]["rule_filter"]["apply"]:
+                query = self.simple_company_query(filters)
+            else:
+                query = self.filter_company_query(filters)
+            data = Database(_profile).query_arg(query, (filters["company"]["specific"]["company_list"],))
+            results["company"]["specific"] = self.data_shape(data, filters["company"]["specific"]["fields"])
+            results["company"]["fields"] = filters["company"]["specific"]["fields"]
+
+        if filters["company"]["insights"]["highest_emp"]:
+            query = "SELECT c.symbol, c.employees FROM stocker.company c WHERE " \
+                    "c.employees = (SELECT MAX(employees) FROM stocker.company)"
+            data = Database(_profile).query(query)
+            results["company"]["insights"]["highest_emp"] = data
+
+        if filters["company"]["insights"]["tech"]:
+            query = "SELECT c.name, c.logo FROM stocker.company c WHERE c.sector = 'Information'"
+            data = Database(_profile).query(query)
+            results["company"]["insights"]["tech"] = data
+
+        if filters["company"]["insights"]["not_us"]:
+            query = "SELECT c.name, c.logo, c.country FROM stocker.company c " \
+                    "WHERE c.country != 'US' AND c.country != 'United States'"
+            data = Database(_profile).query(query)
+            results["company"]["insights"]["not_us"] = data
+
+        if filters["price"]["specific"]["company_list"] and filters["price"]["specific"]["type"]:
+            if filters["price"]["specific"]["start_date"] and filters["price"]["specific"]["end_date"]:
+                query = self.price_query(filters)
+                data = Database(_profile).query_arg(query, (filters["price"]["specific"]["company_list"],))
+                if data:
+                    prices_df = pd.DataFrame(data, columns=["date", "symbol", filters["price"]["specific"]["type"][0]]).set_index("date")
+                else:
+                    prices_df = pd.DataFrame()
+                results["price"]["specific"] = prices_df
+                results["price"]["type"] = filters["price"]["specific"]["type"]
+                results["price"]["company_list"] = filters["price"]["specific"]["company_list"]
+            else:
+                self.view.show_message("st", "warning", "Please fill the date period correctly")
+
+        if filters["price"]["insights"]["highest_close"]:
+            query = self.insight_price_query("MAX", "close")
+            data = Database(_profile).query(query)
+            results["price"]["insights"]["highest_close"] = data
+
+        if filters["price"]["insights"]["lowest_close"]:
+            query = self.insight_price_query("MIN", "close")
+            data = Database(_profile).query(query)
+            results["price"]["insights"]["lowest_close"] = data
+
+        if filters["price"]["insights"]["highest_volume"]:
+            query = self.insight_price_query("MAX", "volume")
+            data = Database(_profile).query(query)
+            results["price"]["insights"]["highest_volume"] = data
+
+        if filters["price"]["insights"]["lowest_volume"]:
+            query = self.insight_price_query("MIN", "volume")
+            data = Database(_profile).query(query)
+            results["price"]["insights"]["lowest_volume"] = data
+
+
+        Database(_profile).close()
+        return results
 
 
 Control().main()
