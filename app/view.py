@@ -420,6 +420,7 @@ class View:
 
     def plot_crypto_ad_hoc(self, results):
         if results["crypto"]:
+            self.st.markdown("___")
             self.show_cryptos(results["crypto"])
 
     def ad_hoc_plot(self, results):
