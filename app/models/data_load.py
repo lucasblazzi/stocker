@@ -13,10 +13,10 @@ class Loader:
     def __init__(self, profile):
         self.profile = profile
         self.api = Api
-        self.company = Company()
-        self.price = Price()
-        self.news = News()
-        self.crypto = Crypto()
+        self.company = Company(profile)
+        self.price = Price(profile)
+        self.news = News(profile)
+        self.crypto = Crypto(profile)
 
     @staticmethod
     def backup(name, items):
