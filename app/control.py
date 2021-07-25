@@ -172,6 +172,29 @@ class Control:
         return query
 
     @staticmethod
+    def filter_news_query(filters):
+        order = "ASC" if filters["news"]["order_method"][0] == "Ascending" else "DESC"
+        op = filters["news"]["filter_date"]
+        if op == "Starting from":
+            operation = ">"
+        elif op == "Until":
+            operation = "<"
+        else:
+            operation = "="
+        query = sql.SQL("SELECT {fields} FROM {table} WHERE symbol = ANY(%s) AND date {operation} {date_input}"
+                        " ORDER BY {order_by} {order_method} LIMIT {limit}").format(
+            table=sql.Identifier("stocker", "news"),
+            fields=sql.SQL(',').join([
+                sql.Identifier(field) for field in filters["news"]["fields"]]),
+            operation=sql.SQL(operation),
+            date_input=sql.Literal(filters["news"]["date"]),
+            order_by=sql.Identifier(filters["news"]["order_by"]),
+            order_method=sql.SQL(order),
+            limit=sql.Literal(filters["news"]["limit"])
+        )
+        return query
+
+    @staticmethod
     def price_query(filters):
         query = sql.SQL("SELECT date, symbol, {field} FROM {table} WHERE symbol = ANY(%s) "
                         "AND price.date BETWEEN {start_date} AND {end_date}").format(
@@ -193,7 +216,8 @@ class Control:
 
     def ad_hoc_compose(self, filters, _profile):
         results = {"company": {"specific": [], "insights": {"highest_emp": [], "tech": [], "not_us": []}, "fields": []},
-                   "price": {"specific": pd.DataFrame(), "type": None, "insights": {"highest_close": [], "lowest_close": [], "highest_volume": [], "lowest_volume": []}}}
+                   "price": {"specific": pd.DataFrame(), "type": None, "insights": {"highest_close": [], "lowest_close": [], "highest_volume": [], "lowest_volume": []}},
+                   "news": {"filter": [], "insights": []}}
         if filters["company"]["specific"]["company_list"] and filters["company"]["specific"]["fields"]:
             if not filters["company"]["specific"]["rule_filter"]["apply"]:
                 query = self.simple_company_query(filters)
@@ -254,7 +278,23 @@ class Control:
             data = Database(_profile).query(query)
             results["price"]["insights"]["lowest_volume"] = data
 
+        if filters["news"]["company_list"]:
+            if filters["news"]["fields"] and filters["news"]["filter_date"]:
+                query = self.filter_news_query(filters)
+                data = Database(_profile).query_arg(query, (filters["news"]["company_list"],))
+                results["news"]["filter"] = self.data_shape(data, filters["news"]["fields"])
+            else:
+                self.view.show_message("st", "warning", "Please fill the fields correctly")
 
+        if filters["news"]["latest"]:
+            query = "SELECT * FROM stocker.news n WHERE " \
+                    "n.date = (SELECT MAX(date) FROM stocker.news) ORDER BY date DESC LIMIT 1"
+            data = Database(_profile).query(query)
+            results["news"]["insights"] = data
+
+        if filters["crypto"]["name"]:
+            cryptos = Crypto(_profile).select_cryptos(filters["crypto"]["name"])
+            results["crypto"] = cryptos[:filters["crypto"]["limit"]]
         Database(_profile).close()
         return results
 

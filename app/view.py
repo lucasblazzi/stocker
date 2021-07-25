@@ -26,8 +26,6 @@ class View:
     def login(self):
         _user = self.side_bar.text_input("Username:")
         _pass = self.side_bar.text_input("Password", type="password")
-        _user = "blazziadm"
-        _pass = "blazziadm"
         return _user, _pass
 
     def advisor_setup(self):
@@ -43,7 +41,7 @@ class View:
                 "company_info": {"enabled": False}, "volatility": {"enabled": False}, "return": {"enabled": False},
                 "raw_price": {"enabled": False}, "volume": {"enabled": False}}
         self.st.markdown("___")
-        check_cols = self.st.beta_columns(5)
+        check_cols = self.st.beta_columns(4)
 
         args["price"]["enabled"] = check_cols[0].checkbox("Price")
         args["company_info"]["enabled"] = check_cols[1].checkbox("Company Information")
@@ -80,7 +78,7 @@ class View:
         r = sectors['sector'].value_counts()
         fig = go.Figure(data=[go.Pie(labels=r.index, values=r)])
         fig.update_layout(
-            width=600, height=600,
+            width=400, height=400,
         )
         self.st.plotly_chart(fig)
 
@@ -131,19 +129,23 @@ class View:
                 info[1].markdown(f"**Location: ** {company.get('city', ' ')} - {company.get('state', ' ')} - {company.get('country', ' ')}")
             self.st.markdown("___")
 
-    def show_news(self, news):
+    def show_news(self, news, title="Company News"):
         self.st.markdown("___")
-        self.st.subheader("Company News")
+        self.st.subheader(title)
         self.st.markdown("<br>", unsafe_allow_html=True)
 
         for n in news:
-            self.st.markdown(f"**{n['symbol']} - {n.get('title', '')} [{n.get('date')}]**")
-            self.st.markdown(f"**Source: ** {n.get('source', '-')}")
+            if n.get('symbol') or n.get('title') or n.get('date'):
+                self.st.markdown(f"**{n.get('symbol', ' ')} - {n.get('title', ' ')} [{n.get('date', ' ')}]**")
+            if n.get('source'):
+                self.st.markdown(f"**Source: ** {n.get('source', '-')}")
             if n.get("image"):
                 self.st.image(n.get("image"), width=300)
-            self.st.markdown(f"**Description: ** {n.get('description', '-')}")
-            self.st.markdown(f"**Access on: ** {n.get('url', '-')}")
-            self.st.markdown("<br><br>", unsafe_allow_html=True)
+            if n.get("description"):
+                self.st.markdown(f"**Description: ** {n.get('description', '-')}")
+            if n.get("url"):
+                self.st.markdown(f"**Access on: ** {n.get('url', '-')}")
+            self.st.markdown("<br>", unsafe_allow_html=True)
 
     def list_advisors(self, advisors):
         for advisor in advisors:
@@ -405,14 +407,31 @@ class View:
                 cols[c].plotly_chart(self.plot_insight_prices(k, val), use_container_width=True)
                 c += 1
 
+    def plot_news_ad_hoc(self, results):
+        if results["news"]["filter"]:
+            self.show_news(results["news"]["filter"], "Filtered News")
+        if results["news"]["insights"]:
+            news_fields = ("id", "symbol", "date", "title", "source", "url", "description", "image")
+            latest = results["news"]["insights"][0]
+            latest_news = dict()
+            for idx, v in enumerate(latest):
+                latest_news[news_fields[idx]] = v
+            self.show_news([latest], f"Latest news - {latest['symbol']} - {latest['date']}")
+
+    def plot_crypto_ad_hoc(self, results):
+        if results["crypto"]:
+            self.show_cryptos(results["crypto"])
+
     def ad_hoc_plot(self, results):
         self.plot_company_ad_hoc(results)
         self.plot_price_ad_hoc(results)
+        self.plot_news_ad_hoc(results)
+        self.plot_crypto_ad_hoc(results)
 
     def ad_hoc_form(self, symbols):
-        send = False
         company_fields = ("symbol", "name", "exchange", "industry", "website", "description", "CEO", "sector",
                           "employees", "state", "city", "country", "logo")
+        news_fields = ("symbol", "date", "title", "source", "url", "description", "image")
         ad_hoc = self.default_ad_hoc()
 
         self.st.markdown("___")
@@ -426,7 +445,6 @@ class View:
         ad_hoc["company"]["specific"]["order_method"] = filter_cols[1].selectbox("Order Method:", ("Ascending", "Descending")),
         ad_hoc["company"]["specific"]["limit"] = filter_cols[2].number_input("Number of results:", value=1, min_value=1, max_value=100),
         ad_hoc["company"]["specific"]["rule_filter"] = {}
-
         cols[1].markdown(f"**Insights views:**")
         cols[2].markdown(f"**-**")
         cols[1].markdown("<br>", unsafe_allow_html=True)
@@ -437,7 +455,6 @@ class View:
         ad_hoc["company"]["insights"]["not_us"] = cols[2].checkbox("Outside USA")
         cols[2].markdown("<br>", unsafe_allow_html=True)
         ad_hoc["company"]["specific"]["rule_filter"]["apply"] = cols[2].checkbox("Rule filter")
-
         if ad_hoc["company"]["specific"]["rule_filter"]["apply"]:
             ad_hoc["company"]["specific"]["rule_filter"]["field"] = filter_cols[0].selectbox(
                 "Filter Field:", ("symbol", "name", "employees"))
@@ -452,7 +469,7 @@ class View:
         self.st.markdown(f"**Prices Options:**")
         price_cols = self.st.beta_columns([2, 1, 1])
         price_cols[0].markdown(f"**Specific price views:**")
-        ad_hoc["price"]["specific"]["company_list"] = price_cols[0].multiselect("Stocks:", sum(symbols, []))
+        ad_hoc["price"]["specific"]["company_list"] = price_cols[0].multiselect("Price Stocks:", sum(symbols, []))
         filter_price_cols = self.st.beta_columns(6)
         ad_hoc["price"]["specific"]["start_date"] = filter_price_cols[0].date_input("Start Date:")
         ad_hoc["price"]["specific"]["end_date"] = filter_price_cols[1].date_input("End Date:")
@@ -467,6 +484,28 @@ class View:
         ad_hoc["price"]["insights"]["highest_volume"] = price_cols[1].checkbox("Highest volume")
         price_cols[2].markdown("<br>", unsafe_allow_html=True)
         ad_hoc["price"]["insights"]["lowest_volume"] = price_cols[2].checkbox("Lowest volume")
+
+        self.st.markdown("___")
+        self.st.markdown(f"**News Options:**")
+        news_cols = self.st.beta_columns([2, 1, 1, 1])
+        news_cols[0].markdown(f"**Specific news views:**")
+        news_cols[1].markdown("-<br>", unsafe_allow_html=True)
+        news_cols[2].markdown("-<br>", unsafe_allow_html=True)
+        news_cols[3].markdown("-<br>", unsafe_allow_html=True)
+        ad_hoc["news"]["company_list"] = news_cols[0].multiselect("News Stocks:", sum(symbols, []))
+        ad_hoc["news"]["fields"] = news_cols[0].multiselect("News Info:", news_fields)
+        ad_hoc["news"]["date"] = news_cols[1].date_input("Date:")
+        ad_hoc["news"]["filter_date"] = news_cols[2].selectbox("Filter Date as:", ("On", "Starting from", "Until"))
+        ad_hoc["news"]["order_by"] = news_cols[1].selectbox("Order by field:", ad_hoc["news"]["fields"])
+        ad_hoc["news"]["order_method"] = news_cols[2].selectbox("Order results:", ("Ascending", "Descending"))
+        ad_hoc["news"]["limit"] = news_cols[3].number_input("Limit of results:", value=1, min_value=1, max_value=100)
+        ad_hoc["news"]["latest"] = news_cols[3].checkbox("Latest News")
+
+        self.st.markdown("___")
+        self.st.markdown(f"**Crypto Options:**")
+        crypto_col = self.st.beta_columns([2, 0.5, 1])
+        ad_hoc["crypto"]["name"] = crypto_col[0].text_input("Cryptocurrency")
+        ad_hoc["crypto"]["limit"] = crypto_col[1].number_input("Limit of crypto:", value=1, min_value=1, max_value=100)
 
         generate = self.st.button("Generate Report")
         if generate:
@@ -495,7 +534,11 @@ class View:
                     "not_us": False
                 }
             },
-            "news": {},
+            "news": {
+                "company_list": [],
+                "date": None,
+                "filter_date": None,
+            },
             "price": {
                 "specific": {
                     "company_list": [],
@@ -510,5 +553,8 @@ class View:
                     "lowest_volume": False,
                 }
             },
-            "crypto": {}
+            "crypto": {
+                "name": None,
+                "limit": None
+            }
         }
