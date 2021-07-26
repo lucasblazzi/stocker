@@ -160,7 +160,7 @@ class Control:
         query = sql.SQL("SELECT {fields} FROM {table} WHERE symbol = ANY(%s) AND {field} {operation} {_val}"
                         "ORDER BY {order_by} {order_method} LIMIT {limit}").format(
             fields=sql.SQL(',').join([
-                sql.Identifier(field) for field in filters["company"]["specific"]["fields"]]),
+                sql.Identifier(field.lower()) for field in filters["company"]["specific"]["fields"]]),
             table=sql.Identifier("stocker", "company"),
             field=sql.Identifier(filters["company"]["specific"]["rule_filter"]["field"]),
             operation=sql.SQL(operation),
@@ -217,7 +217,8 @@ class Control:
     def ad_hoc_compose(self, filters, _profile):
         results = {"company": {"specific": [], "insights": {"highest_emp": [], "tech": [], "not_us": []}, "fields": []},
                    "price": {"specific": pd.DataFrame(), "type": None, "insights": {"highest_close": [], "lowest_close": [], "highest_volume": [], "lowest_volume": []}},
-                   "news": {"filter": [], "insights": []}}
+                   "news": {"filter": [], "insights": []},
+                   "crypto": []}
         if filters["company"]["specific"]["company_list"] and filters["company"]["specific"]["fields"]:
             if not filters["company"]["specific"]["rule_filter"]["apply"]:
                 query = self.simple_company_query(filters)
